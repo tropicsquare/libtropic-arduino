@@ -16,16 +16,11 @@
   },
   "frameworks": "arduino",
   "platforms": "*",
-  "dependencies": {
-    "libtropic": "https://github.com/tropicsquare/libtropic.git#ETR01SDK-298-Implement-Arduino-port"
-  },
   "build": {
+    "extraScript": "extra_script.py",
     "srcFilter": [
-      "TODO"
-    ],
-    "libArchive": false,
-    "flags": [
-       "TODO"
+      "+<src/>",
+      "+<third-party/libtropic/hal/port/arduino/libtropic_port_arduino.cpp>"
     ]
   }
 }
