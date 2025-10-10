@@ -17,6 +17,6 @@
   "frameworks": "arduino",
   "platforms": "*",
   "build": {
-    "extraScript": "extra_script.py"
+    "extraScript": "extra_build_script.py"
   }
 }
