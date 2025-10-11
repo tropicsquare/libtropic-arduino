@@ -11,6 +11,7 @@
 
 class Tropic01 {
    public:
+    ~Tropic01(void);
     lt_ret_t begin(uint16_t spi_cs_pin, unsigned int rng_seed
 #ifdef LT_USE_INT_PIN
                    ,

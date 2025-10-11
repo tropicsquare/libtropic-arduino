@@ -23,3 +23,5 @@ lt_ret_t Tropic01::begin(uint16_t spi_cs_pin, unsigned int rng_seed
 }
 
 lt_ret_t Tropic01::end(void) { return lt_deinit(&this->handle); }
+
+Tropic01::~Tropic01(void) { this->end(); }
