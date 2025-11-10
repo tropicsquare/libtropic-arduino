@@ -2,8 +2,13 @@ from pathlib import Path
 import subprocess
 import shlex
 import re
+import json
 
 Import("env", "projenv")
+
+# Ensure project compiles C++ with C++14 (affects PlatformIO compile, not the CMake subprocess)
+env.Append(CXXFLAGS=["-std=gnu++14"])
+projenv.Append(CXXFLAGS=["-std=gnu++14"])
 
 LIB_NAME_ON_DISK = "LibtropicArduino"
 BUILD_TARGET = "tropic"
@@ -37,36 +42,33 @@ if library_dir is None:
     raise RuntimeError(f"Could not find installed library '{LIB_NAME_ON_DISK}' under {libdeps_root!s}")
 
 # 3) Paths
-external_root = library_dir / "libtropic"
-build_dir = library_dir / "libtropic_build"
-hal_dir = external_root / "hal" / "port" / "arduino"
-
-# list HAL source files (if any)
-hal_sources = []
-for f in hal_dir.iterdir():
-    if f.suffix in (".c", ".cpp", ".cc") and f.is_file():
-        hal_sources.append(f)
+# library_dir is the installed library root (contains CMakeLists.txt that produces hal_cal_vars.json)
+external_root = library_dir / "libtropic"  # path used for building the libtropic target
+hal_cal_vars_build_dir = library_dir / "hal_cal_vars_build"
+hal_cal_vars_json_path = hal_cal_vars_build_dir / "hal_cal_vars.json"
+libtropic_build_dir = library_dir / "libtropic_build"
 
 # 4) Configure & build libtropic with CMake using PlatformIO toolchain
-build_dir.mkdir(parents=True, exist_ok=True)
+libtropic_build_dir.mkdir(parents=True, exist_ok=True)
 
 cc = env.get("CC")
 cxx = env.get("CXX")
 ar = env.get("AR")
 
-# Get the compiler flags from the PlatformIO environment
-# This will include critical flags like -mthumb, -mcpu, -mfloat-abi, etc.
-c_flags = " ".join(env.get("CCFLAGS", []))
+# Get the compiler flags from the PlatformIO environment (may be empty)
+c_flags = " ".join(env.get("CCFLAGS", [])) or ""
+# Ensure C++14 is passed to CMake's CXX flags
+cxx_flags = (c_flags + " -std=gnu++14").strip()
 
-# Base cmake args
+# Base cmake args (we will extend with extra tokens after we extract LT_CAL)
 cmake_args = [
     "cmake",
     "-S", str(external_root),
-    "-B", str(build_dir),
+    "-B", str(libtropic_build_dir),
     # Add this line to pass linker flags during the initial test
     "-DCMAKE_EXE_LINKER_FLAGS=--specs=nosys.specs",
     f"-DCMAKE_C_FLAGS={c_flags}",
-    f"-DCMAKE_CXX_FLAGS={c_flags}" # Use the same flags for C++
+    f"-DCMAKE_CXX_FLAGS={cxx_flags}"
 ]
 
 # pass toolchain compilers if provided by PlatformIO env
@@ -83,24 +85,58 @@ try:
     extra_tokens = shlex.split(libtropic_build_flags)
 except Exception:
     extra_tokens = libtropic_build_flags.split()
-# Append as-is; expected tokens are -D... items (or other CMake options)
+
+# Get the LT_CAL flag (passed by platformio.ini)
+cal_flag = None
+for flag in extra_tokens:
+    if flag.startswith("-DLT_CAL="):
+        cal_flag = flag
+        break
+
+if cal_flag:
+    # remove LT_CAL from extra tokens so we don't duplicate it later
+    extra_tokens = [t for t in extra_tokens if t != cal_flag]
+else:
+    raise RuntimeError(f"-DLT_CAL flag has to be passed into {PIO_LIBTROPIC_BUILD_FLAGS_OPT} in your platformio.ini file!")
+
+# Now append the remaining extra tokens to cmake args
 cmake_args.extend(extra_tokens)
 print(f"Appending {PIO_LIBTROPIC_BUILD_FLAGS_OPT} to CMake args:", extra_tokens)
 
-print("Running CMake configure:", " ".join(cmake_args))
+# Run libtropic-arduino's CMake to generate hal_cal_vars.json
+hal_cal_vars_build_dir.mkdir(parents=True, exist_ok=True)
+
+# Important: run the generator with the library root (not external_root) so top-level CMakeLists can write the JSON
+subprocess.check_call(["cmake", "-S", str(library_dir), "-B", str(hal_cal_vars_build_dir), cal_flag])
+
+# Ensure the JSON was produced
+if not hal_cal_vars_json_path.is_file():
+    print("hal_cal_vars_build_dir contents:", list(hal_cal_vars_build_dir.glob("*")))
+    raise FileNotFoundError(f"hal_cal_vars.json not found at {hal_cal_vars_json_path}")
+
+# Read generated JSON with HAL/CAL vars
+with hal_cal_vars_json_path.open() as f:
+    halcal_vars = json.load(f)
+
+hal_sources = halcal_vars.get("LT_HAL_SRCS", [])
+hal_inc_dirs = halcal_vars.get("LT_HAL_INC_DIRS", [])
+cal_sources = halcal_vars.get("LT_CAL_SRCS", [])
+cal_inc_dirs = halcal_vars.get("LT_CAL_INC_DIRS", [])
+
+# Run the full libtropic CMake configure & build
+print("Running CMake configure for libtropic build:", " ".join(cmake_args))
 subprocess.check_call(cmake_args)
 
 print(f"Running CMake build (target '{BUILD_TARGET}')")
-subprocess.check_call(["cmake", "--build", str(build_dir), "--target", BUILD_TARGET])
+subprocess.check_call(["cmake", "--build", str(libtropic_build_dir), "--target", BUILD_TARGET])
 
 # Find produced .a
-lib_static_path = build_dir / "libtropic.a"
+lib_static_path = libtropic_build_dir / "libtropic.a"
 if not lib_static_path.is_file():
-    raise RuntimeError(f"Could not find produced static library in {build_dir}")
+    raise RuntimeError(f"Could not find produced static library in {libtropic_build_dir}")
 
 # Parse flags.make for target
-flags_make_path = build_dir / "CMakeFiles" / f"{BUILD_TARGET}.dir" / "flags.make"
-parsed_defines = []
+flags_make_path = libtropic_build_dir / "CMakeFiles" / f"{BUILD_TARGET}.dir" / "flags.make"
 
 # Get defines used for building libtropic
 if flags_make_path and flags_make_path.is_file():
@@ -128,40 +164,75 @@ env.ProcessFlags(" ".join(define_flags))
 projenv.ProcessFlags(" ".join(define_flags))
 
 # 5) Prepare include paths: libtropic includes + per-env libdeps includes
-cpppaths = []
-cpppaths.append(str(external_root / "include"))
-cpppaths.append(str(external_root / "src"))
-cpppaths.append(str(hal_dir))
+def ensure_list(x):
+    if x is None:
+        return []
+    if isinstance(x, (list, tuple)):
+        return list(x)
+    return [x]
 
+def to_abs_include_paths(root: Path, src_list):
+    """Convert CMake-provided include entries to absolute paths (root-relative if needed)."""
+    out = []
+    for s in ensure_list(src_list):
+        p = Path(s)
+        if not p.is_absolute():
+            p = (root / p).resolve()
+        else:
+            p = p.resolve()
+        out.append(str(p))
+    return out
+
+# Make absolute include dirs for HAL/CAL entries (relative to library root)
+hal_inc_list = to_abs_include_paths(external_root, hal_inc_dirs)
+cal_inc_list = to_abs_include_paths(external_root, cal_inc_dirs)
+
+cpppaths = []
+# public headers
+cpppaths.append(str((external_root / "include").resolve()))
+# internal src headers (add this so CAL impls can include internal headers)
+cpppaths.append(str((external_root / "src").resolve()))
+
+# include HAL/CAL include directories (already absolute)
+cpppaths.extend(hal_inc_list)
+cpppaths.extend(cal_inc_list)
+
+# Add per-env libdeps include folders (if libdeps_env_dir exists)
 if libdeps_env_dir and libdeps_env_dir.is_dir():
     for libfolder in libdeps_env_dir.iterdir():
-        libfolder_path = libfolder
-        if not libfolder_path.is_dir():
+        if not libfolder.is_dir():
             continue
-        inc1 = libfolder_path / "include"
-        inc2 = libfolder_path / "src"
-        inc3 = libfolder_path / "src" / "include"
+        inc1 = libfolder / "include"
+        inc2 = libfolder / "src"
+        inc3 = libfolder / "src" / "include"
         if inc1.is_dir():
-            cpppaths.append(str(inc1))
+            cpppaths.append(str(inc1.resolve()))
         if inc2.is_dir():
-            cpppaths.append(str(inc2))
+            cpppaths.append(str(inc2.resolve()))
         if inc3.is_dir():
-            cpppaths.append(str(inc3))
-        cpppaths.append(str(libfolder_path))
+            cpppaths.append(str(inc3.resolve()))
+        cpppaths.append(str(libfolder.resolve()))
 
-# Dedupe while preserving order
+# Dedupe while preserving order, only keep existing directories
 seen = set()
 cpppaths_filtered = []
 for p in cpppaths:
-    if p and Path(p).is_dir() and p not in seen:
-        seen.add(p)
-        cpppaths_filtered.append(p)
+    try:
+        pp = Path(p)
+    except TypeError:
+        print("Skipping invalid CPPPATH entry:", repr(p))
+        continue
+    if pp.is_dir() and str(pp) not in seen:
+        seen.add(str(pp))
+        cpppaths_filtered.append(str(pp))
 
 if cpppaths_filtered:
     env.Append(CPPPATH=cpppaths_filtered)
     print("Added CPPPATH entries for libtropic and libdeps (per-env):")
     for p in cpppaths_filtered:
         print("  ", p)
+else:
+    print("No CPPPATH entries found/added.")
 
 # 6) Add the built static library for linking (LIBPATH + LIBS with short name)
 libfilename = lib_static_path.name
@@ -170,18 +241,46 @@ if libfilename.startswith("lib") and libfilename.endswith(".a"):
 else:
     lib_shortname = lib_static_path.stem
 
-env.Append(LIBPATH=[str(build_dir)])
+env.Append(LIBPATH=[str(libtropic_build_dir.resolve())])
 env.Append(LIBS=[lib_shortname])
 
 print("Will link static lib:", str(lib_static_path), "as -l" + lib_shortname)
 
-# 7) Compile HAL sources into project build (after CPPPATH and CPPDEFINES added)
+# 7) Compile HAL/CAL implementation sources into project build (after CPPPATH and CPPDEFINES added)
+# Convert CMake-provided source lists to absolute paths (they may be relative to external_root)
+def to_abs_paths(root: Path, src_list):
+    out = []
+    for s in ensure_list(src_list):
+        p = Path(s)
+        if not p.is_absolute():
+            p = (root / p).resolve()
+        else:
+            p = p.resolve()
+        out.append(p)
+    return out
+
+hal_source_paths = to_abs_paths(external_root, hal_sources)
+cal_source_paths = to_abs_paths(external_root, cal_sources)
+
+# Build the directories that contain those source files (unique, existing parents)
+hal_dirs = sorted({ str(p.parent) for p in hal_source_paths if p.exists() })
+cal_dirs = sorted({ str(p.parent) for p in cal_source_paths if p.exists() })
+
+# IMPORTANT: add these implementation-parent directories to CPPPATH as well so headers next to .c files are found
+for d in hal_dirs + cal_dirs:
+    if d not in cpppaths_filtered:
+        env.Append(CPPPATH=[d])
+        cpppaths_filtered.append(d)
+        print("Added impl-parent to CPPPATH:", d)
+
 build_dir_expanded = env.subst("$BUILD_DIR")
 hal_target_dir = str(Path(build_dir_expanded) / ("lib_" + lib_shortname + "_hal"))
+cal_target_dir = str(Path(build_dir_expanded) / ("lib_" + lib_shortname + "_cal"))
 
-if not hal_sources:
-    # keep the same failure semantics as before
-    raise RuntimeError("No HAL sources found at", str(hal_dir))
+for d in hal_dirs:
+    print("Building HAL sources from dir:", d)
+    env.BuildSources(hal_target_dir, d)
 
-print("Compiling HAL sources into project build from", str(hal_dir))
-env.BuildSources(hal_target_dir, str(hal_dir))
+for d in cal_dirs:
+    print("Building CAL sources from dir:", d)
+    env.BuildSources(cal_target_dir, d)
