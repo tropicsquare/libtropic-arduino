@@ -2,13 +2,13 @@
 
 Tropic01::~Tropic01(void) { this->end(); }
 
-lt_ret_t Tropic01::begin(const uint16_t spi_cs_pin, const unsigned int rng_seed
+lt_ret_t Tropic01::begin(const uint16_t spi_cs_pin
 #ifdef LT_USE_INT_PIN
                          ,
                          const uint16_t int_gpio_pin
 #endif
                          ,
-                         SPIClass& spi, SPISettings spi_settings)
+                         const unsigned int rng_seed, SPIClass& spi, SPISettings spi_settings)
 {
     // Initialize device structure
     this->device.spi_cs_pin = spi_cs_pin;
