@@ -5,7 +5,6 @@ We love contributions! To make contributing simple for both sides, please:
 - Create a branch from the develop branch and do the changes:
     - Make sure to follow specifics in our [Coding Style](#coding-style).
     - Make sure to use [Code Formatter](#code-formatter), otherwise the PR check will fail and cannot be merged.
-    - Make sure the branch passes [Tests](https://tropicsquare.github.io/libtropic/latest/for_contributors/functional_tests/) against model -- otherwise, the PR check will fail.
     - Make sure to run [Static Analysis](#static-analysis).
     - Make sure your [Commit Messages](#commit-messages) follow our guidelines.
 - Create pull request.
@@ -50,6 +49,10 @@ clang-format -i <path_to_the_file_to_format>
 ```json
 { // Add this bracket only if your settings.json file is empty
     "[c]": {
+        "editor.defaultFormatter": "ms-vscode.cpptools",
+        "editor.formatOnSave": true
+    },
+    "[cpp]": {
         "editor.defaultFormatter": "ms-vscode.cpptools",
         "editor.formatOnSave": true
     },
