@@ -3,7 +3,7 @@
 Tropic01::~Tropic01(void) { this->end(); }
 
 lt_ret_t Tropic01::begin(const uint16_t spi_cs_pin
-#ifdef LT_USE_INT_PIN
+#if LT_USE_INT_PIN
                          ,
                          const uint16_t int_gpio_pin
 #endif
@@ -12,7 +12,7 @@ lt_ret_t Tropic01::begin(const uint16_t spi_cs_pin
 {
     // Initialize device structure
     this->device.spi_cs_pin = spi_cs_pin;
-#ifdef LT_USE_INT_PIN
+#if LT_USE_INT_PIN
     this->device.int_gpio_pin = int_gpio_pin;
 #endif
     this->device.spi_settings = spi_settings;

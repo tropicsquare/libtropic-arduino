@@ -13,7 +13,7 @@ class Tropic01 {
    public:
     ~Tropic01(void);
     lt_ret_t begin(const uint16_t spi_cs_pin
-#ifdef LT_USE_INT_PIN
+#if LT_USE_INT_PIN
                    ,
                    const uint16_t int_gpio_pin
 #endif
