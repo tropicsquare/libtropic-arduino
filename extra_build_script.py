@@ -12,7 +12,9 @@ projenv.Append(CXXFLAGS=["-std=gnu++14"])
 
 LIB_NAME_ON_DISK = "LibtropicArduino"
 BUILD_TARGET = "tropic"
-PIO_LIBTROPIC_BUILD_FLAGS_OPT = "libtropic_build_flags"
+LIBTROPIC_DEFAULT_BUILD_FLAGS = [
+    "-DLT_CAL=mbedtls_v4"
+]
 
 # 1) Find PROJECT_LIBDEPS_DIR and current PIO environment name
 libdeps_root = env.get("PROJECT_LIBDEPS_DIR")
@@ -79,29 +81,24 @@ if cxx:
 if ar:
     cmake_args.append(f"-DCMAKE_AR={ar}")
 
-# Read libtropic_build_flags from platformio.ini (per-env)
-libtropic_build_flags = env.GetProjectOption(PIO_LIBTROPIC_BUILD_FLAGS_OPT)
+# Get all flags starting with -D
 try:
-    extra_tokens = shlex.split(libtropic_build_flags)
-except Exception:
-    extra_tokens = libtropic_build_flags.split()
+    flags_for_libtropic = [f for f in env['BUILD_FLAGS'] if f.startswith("-D")]
+except:
+    flags_for_libtropic = []
 
-# Get the LT_CAL flag (passed by platformio.ini)
+# Append default libtropic flags
+flags_for_libtropic.extend(LIBTROPIC_DEFAULT_BUILD_FLAGS)
+
+# Get the LT_CAL flag
 cal_flag = None
-for flag in extra_tokens:
+for flag in flags_for_libtropic:
     if flag.startswith("-DLT_CAL="):
         cal_flag = flag
         break
 
-if cal_flag:
-    # remove LT_CAL from extra tokens so we don't duplicate it later
-    extra_tokens = [t for t in extra_tokens if t != cal_flag]
-else:
-    raise RuntimeError(f"-DLT_CAL flag has to be passed into {PIO_LIBTROPIC_BUILD_FLAGS_OPT} in your platformio.ini file!")
-
-# Now append the remaining extra tokens to cmake args
-cmake_args.extend(extra_tokens)
-print(f"Appending {PIO_LIBTROPIC_BUILD_FLAGS_OPT} to CMake args:", extra_tokens)
+# Append the extracted flags to CMake args
+cmake_args.extend(flags_for_libtropic)
 
 # Run libtropic-arduino's CMake to generate hal_cal_vars.json
 hal_cal_vars_build_dir.mkdir(parents=True, exist_ok=True)
