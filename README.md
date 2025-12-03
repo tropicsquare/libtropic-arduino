@@ -55,12 +55,33 @@ The LibtropicArduino library is implemented in a way to be compliant with the re
         ```
         This step is recommended, but could be ommitted if you know what you are doing.
 
-### Supported Libtropic Build Flags
-All Libtropic's build flags are available at the top of its [CMakeLists.txt](https://github.com/tropicsquare/libtropic/blob/master/CMakeLists.txt), but only these are currently supported by LibtropicArduino:
-- `LT_HELPERS`,
-- `LT_USE_INT_PIN`,
-- `LT_PRINT_SPI_DATA`,
-- `LT_LOG_LVL`.
+## Using Libtropic directly Inside PlatformIO
+It is also possible to not use our C++ wrapper and use the C Libtropic API directly. To do that, repeat the steps 1, 2, 3 and 4 from [Using LibtropicArduino Inside PlatformIO](#using-libtropicarduino-inside-platformio) and then do the following:
+1. In your source file (e.g. `src/main.cpp`), do the following:
+    1. Include the needed headers:
+        ```cpp
+        #include "libtropic.h"
+        #include "libtropic_common.h"
+        #include "psa/crypto.h"  // MbedTLS's PSA Crypto library.
+        ```
+    2. Initialize MbedTLS's PSA Crypto library:
+        ```cpp
+        void setup() {
+            psa_status_t mbedtlsInitStatus = psa_crypto_init();
+            if (mbedtlsInitStatus != PSA_SUCCESS) {
+                // Your error handling.
+            }
+        }
+        ```
+    3. Implement the rest of your program. Refer to [Examples](https://tropicsquare.github.io/libtropic/latest/get_started/examples/) in the [Libtropic documentation](https://tropicsquare.github.io/libtropic/latest/) for examples on how to use Libtropic to communicate with TROPIC01.
+    4. At the end of the program, free MbedTLS's PSA Crypto resources:
+        ```cpp
+        mbedtls_psa_crypto_free();
+        ```
+        This step is recommended, but could be ommitted if you know what you are doing.
+
+## Supported Libtropic Build Flags
+Except [LT_BUILD_TESTS](https://tropicsquare.github.io/libtropic/latest/get_started/integrating_libtropic/how_to_configure/#lt_build_tests), all Libtropic's [Available CMake Options](https://tropicsquare.github.io/libtropic/latest/get_started/integrating_libtropic/how_to_configure/#available-cmake-options) are supported.
 
 ## Contributing
 Contributors, please follow the [contribution guidelines](CONTRIBUTING.md).
