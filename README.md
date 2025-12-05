@@ -154,6 +154,9 @@ Except [LT_BUILD_TESTS](https://tropicsquare.github.io/libtropic/latest/get_star
 > [!IMPORTANT]
 > If you are using the [LT_LOG_LVL](https://tropicsquare.github.io/libtropic/latest/get_started/integrating_libtropic/how_to_configure/#lt_log_lvl) CMake option, do not forget to call `Serial.begin(your_baudrate)` in your `setup()` function, as the logging in the Arduino HAL is done via the `Serial` class.
 
+## FAQ
+If you encounter any issues, please check the [FAQ](./FAQ.md) before filing an issue or reaching out to our [support](https://support.desk.tropicsquare.com/).
+
 ## Contributing
 Contributors, please follow the [contribution guidelines](CONTRIBUTING.md).
 
