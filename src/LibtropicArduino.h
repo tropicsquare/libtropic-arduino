@@ -33,8 +33,18 @@ class Tropic01 {
      * @brief Initializes resources. Must be called before all other methods are called.
      * @note Number of arguments depends on some Libtropic's CMake options.
      *
-     * @retval  LT_OK Method executed successfully
-     * @retval  other Method did not execute successully, you might use lt_ret_verbose() to get verbose
+     * @param[in] spi_cs_pin    GPIO pin where TROPIC01's CS pin is connected
+     * @param[in] int_gpio_pin  GPIO pin where TROPIC01's interrupt pin is connected (is one of the parameters only if
+     * LT_USE_INT_PIN=1)
+     * @param[in] l3_buff       User-defined L3 buffer (is one of the parameters only if LT_SEPARATE_L3_BUFF=1)
+     * @param[in] l3_buff_len   Length of `lf_buff` (is one of the parameters only if LT_SEPARATE_L3_BUFF=1)
+     * @param[in] rng_seed      Seed for the PRNG (defaults to random())
+     * @param[in] spi           Instance of `SPIClass` to use, defaults to default SPI instance set by `<SPI.h>`
+     * @param[in] spi_settings  SPI settings, defaults to tested values. If you want to change them, keep
+     * `SPISettings.dataOrder=MSBFIRST` and `SPISettings.dataMode=SPI_MODE0` (required by TROPIC01).
+     *
+     * @retval                  LT_OK Method executed successfully
+     * @retval                  other Method did not execute successully, you might use lt_ret_verbose() to get verbose
      * encoding of returned value
      */
     lt_ret_t begin(const uint16_t spi_cs_pin
@@ -62,8 +72,12 @@ class Tropic01 {
     /**
      * @brief Establishes Secure Session Channel with TROPIC01.
      *
-     * @retval  LT_OK Method executed successfully
-     * @retval  other Method did not execute successully, you might use lt_ret_verbose() to get verbose
+     * @param shipriv[in]     Host's private pairing key for the slot `pkey_index`
+     * @param shipub[in]      Host's public pairing key for the slot `pkey_index`
+     * @param pkey_index[in]  Pairing key index
+     *
+     * @retval                LT_OK Method executed successfully
+     * @retval                other Method did not execute successully, you might use lt_ret_verbose() to get verbose
      * encoding of returned value
      */
     lt_ret_t secureSessionStart(const uint8_t *shipriv, const uint8_t *shipub, const lt_pkey_index_t pkey_index);
@@ -81,9 +95,13 @@ class Tropic01 {
      * @brief Executes the TROPIC01's Ping command. It is a dummy command to check the Secure Channel Session
      * is valid by exchanging a message with TROPIC01, which is echoed through the Secure Channel.
      *
-     * @retval  LT_OK Method executed successfully
-     * @retval  other Method did not execute successully, you might use lt_ret_verbose() to get verbose
-     * encoding of returned value
+     * @param msg_out[in]  Ping message going out
+     * @param msg_in[out]  Ping message going in
+     * @param msg_len[in]  Length of both messages (msg_out and msg_in)
+     *
+     * @retval             LT_OK Function executed successfully
+     * @retval             other Function did not execute successully, you might use lt_ret_verbose() to get verbose
+     * encoding
      */
     lt_ret_t ping(const uint8_t *msg_out, uint8_t *msg_in, const uint16_t msg_len);
 

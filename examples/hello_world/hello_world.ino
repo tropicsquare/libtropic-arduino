@@ -42,10 +42,10 @@
 #include "psa/crypto.h"
 
 // TROPIC01 related macros.
-#define TROPIC01_CS_PIN 5  // Platform's pin number where TROPIC01's SPI Chip Select pin is connected to.
+#define TROPIC01_CS_PIN 5  // Platform's pin number where TROPIC01's SPI Chip Select pin is connected.
 #if LT_USE_INT_PIN
 #define TROPIC01_INT_PIN \
-    4  // Platform's pin number where TROPIC01's interrupt pin is connected to.
+    4  // Platform's pin number where TROPIC01's interrupt pin is connected.
        // Is necessary only when -DLT_USE_INT_PIN=1 was set in build_flags.
 #endif
 
