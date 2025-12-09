@@ -22,7 +22,7 @@ The LibtropicArduino library is implemented in a way to be compliant with the re
 
 ## Using LibtropicArduino Inside PlatformIO
 > [!IMPORTANT]
-> We provide a C++ wrapper for Libtropic for easier use. However, the implementation of this wrapper is not complete - this is your change to try out the rest of the implementation! If you do so, please, send us a PR.
+> We provide a C++ wrapper for Libtropic for convenience. However, the implementation of this wrapper is not complete – this is your chance to try to implement some of the missing functionality and contribute to the library! If you would like to contribute, read the [contributing guidelines](./CONTRIBUTING.md) and send us a Pull Request!
 
 1. Create a new PlatformIO project.
 2. Select your board and the Arduino framework.
