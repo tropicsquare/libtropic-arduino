@@ -77,7 +77,7 @@ It is also possible to use the C Libtropic API directly. However, this requires 
 
 Repeat the steps 1, 2, 3, 4 from [Using LibtropicArduino Inside PlatformIO](#using-libtropicarduino-inside-platformio) and then do the following:
 1. In your source file (e.g. `src/main.cpp`), do the following:
-    1. Include the needed headers:
+    1. Include the required headers:
         ```cpp
         #include "libtropic.h"
         #include "libtropic_common.h"
