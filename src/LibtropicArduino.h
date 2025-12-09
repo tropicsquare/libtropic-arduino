@@ -103,7 +103,7 @@ class Tropic01 {
      * @retval             other Function did not execute successully, you might use lt_ret_verbose() to get verbose
      * encoding
      */
-    lt_ret_t ping(const uint8_t *msg_out, uint8_t *msg_in, const uint16_t msg_len);
+    lt_ret_t ping(const char msg_out[], char msg_in[], const uint16_t msg_len);
 
    private:
     lt_dev_arduino_t device;

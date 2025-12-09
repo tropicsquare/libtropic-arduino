@@ -68,7 +68,7 @@ lt_ret_t Tropic01::secureSessionStart(const uint8_t *shipriv, const uint8_t *shi
 
 lt_ret_t Tropic01::secureSessionEnd(void) { return lt_session_abort(&this->handle); }
 
-lt_ret_t Tropic01::ping(const uint8_t *msg_out, uint8_t *msg_in, const uint16_t msg_len)
+lt_ret_t Tropic01::ping(const char msg_out[], char msg_in[], const uint16_t msg_len)
 {
-    return lt_ping(&this->handle, msg_out, msg_in, msg_len);
+    return lt_ping(&this->handle, (uint8_t *)msg_out, (uint8_t *)msg_in, msg_len);
 }

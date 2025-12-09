@@ -56,10 +56,10 @@
 #define PAIRING_KEY_SLOT TR01_PAIRING_KEY_SLOT_INDEX_0
 
 // TROPIC01 related variables.
-Tropic01 tropic01;                                // TROPIC01 instance.
-lt_ret_t returnVal;                               // Used for return values of Tropic01's methods.
-uint8_t pingMsgToSend[] = "Hello World!";         // Ping message we will send to TROPIC01 via the Secure Channel.
-uint8_t pingMsgToReceive[sizeof(pingMsgToSend)];  // Buffer for receiving the Ping message from TROPIC01.
+Tropic01 tropic01;                             // TROPIC01 instance.
+lt_ret_t returnVal;                            // Used for return values of Tropic01's methods.
+char pingMsgToSend[] = "Hello World!";         // Ping message we will send to TROPIC01 via the Secure Channel.
+char pingMsgToReceive[sizeof(pingMsgToSend)];  // Buffer for receiving the Ping message from TROPIC01.
 
 #if LT_SEPARATE_L3_BUFF
 // It is possible to define user's own buffer for L3 Layer data.
@@ -146,7 +146,7 @@ void loop()
     Serial.println("--");
     // Print our Ping message we want to send.
     Serial.print("Sending the following Ping message to TROPIC01: \"");
-    Serial.print((char *)pingMsgToSend);
+    Serial.print(pingMsgToSend);
     Serial.println("\"");
 
     // Ping TROPIC01 with our message.
