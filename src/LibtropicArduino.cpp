@@ -8,19 +8,17 @@
 
 #include "LibtropicArduino.h"
 
-Tropic01::~Tropic01(void) { this->end(); }
-
-lt_ret_t Tropic01::begin(const uint16_t spi_cs_pin
+Tropic01::Tropic01(const uint16_t spi_cs_pin
 #if LT_USE_INT_PIN
-                         ,
-                         const uint16_t int_gpio_pin
+                   ,
+                   const uint16_t int_gpio_pin
 #endif
 #if LT_SEPARATE_L3_BUFF
-                         ,
-                         uint8_t *l3_buff, const uint16_t l3_buff_len
+                   ,
+                   uint8_t l3_buff[], const uint16_t l3_buff_len
 #endif
-                         ,
-                         const unsigned int rng_seed, SPIClass &spi, SPISettings spi_settings)
+                   ,
+                   const unsigned int rng_seed, SPIClass &spi, SPISettings spi_settings)
 {
     // Initialize device structure
     this->device.spi_cs_pin = spi_cs_pin;
@@ -40,9 +38,9 @@ lt_ret_t Tropic01::begin(const uint16_t spi_cs_pin
     this->handle.l3.buff = l3_buff;
     this->handle.l3.buff_len = l3_buff_len;
 #endif
-
-    return lt_init(&this->handle);
 }
+
+lt_ret_t Tropic01::begin(void) { return lt_init(&this->handle); }
 
 lt_ret_t Tropic01::end(void)
 {

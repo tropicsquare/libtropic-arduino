@@ -41,7 +41,8 @@
 // MbedTLS's PSA Crypto library.
 #include "psa/crypto.h"
 
-// TROPIC01 related macros.
+// -------------------------------------- TROPIC01 related macros --------------------------------------
+// GPIO pin definitions.
 #define TROPIC01_CS_PIN 5  // Platform's pin number where TROPIC01's SPI Chip Select pin is connected.
 #if LT_USE_INT_PIN
 #define TROPIC01_INT_PIN \
@@ -54,22 +55,41 @@
 #define PAIRING_KEY_PRIV sh0priv_prod0
 #define PAIRING_KEY_PUB sh0pub_prod0
 #define PAIRING_KEY_SLOT TR01_PAIRING_KEY_SLOT_INDEX_0
+// -----------------------------------------------------------------------------------------------------
 
-// TROPIC01 related variables.
-Tropic01 tropic01;                             // TROPIC01 instance.
-lt_ret_t returnVal;                            // Used for return values of Tropic01's methods.
-char pingMsgToSend[] = "Hello World!";         // Ping message we will send to TROPIC01 via the Secure Channel.
-char pingMsgToReceive[sizeof(pingMsgToSend)];  // Buffer for receiving the Ping message from TROPIC01.
-
+// ------------------------------------ TROPIC01 related variables -------------------------------------
 #if LT_SEPARATE_L3_BUFF
 // It is possible to define user's own buffer for L3 Layer data.
 // This is handy when using multiple instances of lt_handle_t - only one buffer for all instances will be used.
 uint8_t l3_buffer[LT_SIZE_OF_L3_BUFF] __attribute__((aligned(16))) = {0};
 #endif
 
+// Because Tropic01 constructor has different number of parameters depending on the used Libtropic
+// CMake options, we are wrapping its call with the directives, so this example is functional with
+// every supported Libtropic CMake option without making any changes to it.
+// This is of course not necessary in your application, if you are not frequently changing the
+// Libtropic CMake options that affect the Tropic01 constructor parameters.
+Tropic01 tropic01(TROPIC01_CS_PIN
+#if LT_USE_INT_PIN
+                  ,
+                  TROPIC01_INT_PIN
+#endif
+#if LT_SEPARATE_L3_BUFF
+                  ,
+                  l3_buffer, sizeof(l3_buffer)
+#endif
+);                                             // TROPIC01 instance.
+lt_ret_t returnVal;                            // Used for return values of Tropic01's methods.
+char pingMsgToSend[] = "Hello World!";         // Ping message we will send to TROPIC01 via the Secure Channel.
+char pingMsgToReceive[sizeof(pingMsgToSend)];  // Buffer for receiving the Ping message from TROPIC01.
+// -----------------------------------------------------------------------------------------------------
+
+// ------------------------------------------ Other variables ------------------------------------------
 // Used when initializing MbedTLS's PSA Crypto.
 psa_status_t mbedtlsInitStatus;
+// -----------------------------------------------------------------------------------------------------
 
+// ---------------------------------------- Utility functions ------------------------------------------
 // Used when some error occurs.
 void errorHandler(void)
 {
@@ -80,7 +100,9 @@ void errorHandler(void)
     Serial.println("Cleanup finished, entering infinite loop...");
     while (true);
 }
+// -----------------------------------------------------------------------------------------------------
 
+// ------------------------------------------ Setup function -------------------------------------------
 void setup()
 {
     Serial.begin(9600);
@@ -101,23 +123,9 @@ void setup()
     }
     Serial.println("  OK");
 
-    // Init Tropic01 instance.
-    Serial.println("Initializing the Tropic01 instance...");
-    // Because tropic01.begin() has different number of parameters depending on the used Libtropic
-    // CMake options, we are wrapping its call the directives, so this example is functional with
-    // every supported Libtropic CMake option without making any changes to it.
-    // This is of course not necessary in your application, if you are not frequently changing the
-    // Libtropic CMake options that affect the tropic01.begin() parameters.
-    returnVal = tropic01.begin(TROPIC01_CS_PIN
-#if LT_USE_INT_PIN
-                               ,
-                               TROPIC01_INT_PIN
-#endif
-#if LT_SEPARATE_L3_BUFF
-                               ,
-                               l3_buffer, sizeof(l3_buffer)
-#endif
-    );
+    // Init Tropic01 resources.
+    Serial.println("Initializing the Tropic01 resources...");
+    returnVal = tropic01.begin();
 
     if (returnVal != LT_OK) {
         Serial.print("Tropic01.begin() failed, returnVal=");
@@ -140,7 +148,9 @@ void setup()
     Serial.println();
     Serial.println("---------------------------- Loop -----------------------------");
 }
+// -----------------------------------------------------------------------------------------------------
 
+// ------------------------------------------ Loop function --------------------------------------------
 void loop()
 {
     Serial.println("--");
@@ -168,3 +178,4 @@ void loop()
     // Wait some time before the next Ping.
     delay(2000);
 }
+// -----------------------------------------------------------------------------------------------------
