@@ -42,9 +42,24 @@ The LibtropicArduino library is implemented in a way to be compliant with the re
         #include <LibtropicArduino.h>
         #include "psa/crypto.h"  // MbedTLS's PSA Crypto library.
         ```
-    2. Declare a global instance of `Tropic01`:
+    2. Declare a global instance of `Tropic01` by calling its constructor (see `examples/` or the tiny example below). The number of parameters depends on the [LT_USE_INT_PIN](https://tropicsquare.github.io/libtropic/latest/get_started/integrating_libtropic/how_to_configure/#lt_use_int_pin) and [LT_SEPARATE_L3_BUFF](https://tropicsquare.github.io/libtropic/latest/get_started/integrating_libtropic/how_to_configure/#lt_separate_l3_buff) CMake options. These are the parameters of `Tropic01` constructor:
+        - `spi_cs_pin`: GPIO pin where TROPIC01's CS pin is connected.
+        - `int_gpio_pin` (exists only if [LT_USE_INT_PIN](https://tropicsquare.github.io/libtropic/latest/get_started/integrating_libtropic/how_to_configure/#lt_use_int_pin)=1): GPIO pin where TROPIC01's interrupt pin is connected.
+        - `l3_buff` (exists only if [LT_SEPARATE_L3_BUFF](https://tropicsquare.github.io/libtropic/latest/get_started/integrating_libtropic/how_to_configure/#lt_separate_l3_buff)=1): User-defined L3 buffer.
+        - `l3_buff_len` (exists only if [LT_SEPARATE_L3_BUFF](https://tropicsquare.github.io/libtropic/latest/get_started/integrating_libtropic/how_to_configure/#lt_separate_l3_buff)=1): Length of `lf_buff`.
+        - `rng_seed`: Seed for the PRNG (defaults to random()).
+        - `spi`: Instance of SPIClass to use, defaults to the default SPI instance set by `<SPI.h>`.
+        - `spi_settings`: SPI settings, defaults to tested values. If you want to change them, keep `SPISettings.dataOrder=MSBFIRST` and `SPISettings.dataMode=SPI_MODE0` (required by TROPIC01).
+
+        For the purpose of the tiny example below, consider:
+        1. [LT_USE_INT_PIN](https://tropicsquare.github.io/libtropic/latest/get_started/integrating_libtropic/how_to_configure/#lt_use_int_pin)=0,
+        2. [LT_SEPARATE_L3_BUFF](https://tropicsquare.github.io/libtropic/latest/get_started/integrating_libtropic/how_to_configure/#lt_separate_l3_buff)=0,
+        3. using default values for the `Tropic01()` parameters that have a default value,
+        4. `TROPIC01_CS_PIN` is a pin on your board where TROPIC01's Chip Select pin is connected.
+        
+        The global instance of `Tropic01` would then be declared as:
         ```cpp
-        Tropic01 tropic01;
+        Tropic01 tropic01(TROPIC01_CS_PIN);
         ```
     3. In your `setup()` function, do the following:
         1. Initialize MbedTLS's PSA Crypto library:
@@ -58,19 +73,26 @@ The LibtropicArduino library is implemented in a way to be compliant with the re
             ```cpp
             Serial.begin(your_baudrate);
             ```
-        3. Initialize `tropic01` using its `begin()` method. The number of parameters depends on the [LT_USE_INT_PIN](https://tropicsquare.github.io/libtropic/latest/get_started/integrating_libtropic/how_to_configure/#lt_use_int_pin) and [LT_SEPARATE_L3_BUFF](https://tropicsquare.github.io/libtropic/latest/get_started/integrating_libtropic/how_to_configure/#lt_separate_l3_buff) CMake options. These are the parameters of `Tropic01.begin()`:
-           - `spi_cs_pin`: GPIO pin where TROPIC01's CS pin is connected.
-           - `int_gpio_pin` (exists only if [LT_USE_INT_PIN](https://tropicsquare.github.io/libtropic/latest/get_started/integrating_libtropic/how_to_configure/#lt_use_int_pin)=1): GPIO pin where TROPIC01's interrupt pin is connected.
-           - `l3_buff` (exists only if [LT_SEPARATE_L3_BUFF](https://tropicsquare.github.io/libtropic/latest/get_started/integrating_libtropic/how_to_configure/#lt_separate_l3_buff)=1): User-defined L3 buffer.
-           - `l3_buff_len` (exists only if [LT_SEPARATE_L3_BUFF](https://tropicsquare.github.io/libtropic/latest/get_started/integrating_libtropic/how_to_configure/#lt_separate_l3_buff)=1): Length of `lf_buff`.
-           - `rng_seed`: Seed for the PRNG (defaults to random()).
-           - `spi`: Instance of SPIClass to use, defaults to the default SPI instance set by `<SPI.h>`.
-           - `spi_settings`: SPI settings, defaults to tested values. If you want to change them, keep `SPISettings.dataOrder=MSBFIRST` and `SPISettings.dataMode=SPI_MODE0` (required by TROPIC01).
+        3. Initialize `tropic01` using its `begin()` method:
+            ```cpp
+            lt_ret_t ret = tropic01.begin();
+            if (ret != LT_OK) {
+                // Your error handling.
+            }
+            ```
     4. Implement the rest of your program. Refer to this repository's `examples/` folder for examples on how to use the LibtropicArduino library to communicate with TROPIC01.
-    5. At the end of the program, free MbedTLS's PSA Crypto resources (could be ommitted if you know what you are doing):
-        ```cpp
-        mbedtls_psa_crypto_free();
-        ```
+    5. At the end of the program, do the following:
+       1. Deinitialize `tropic01` using its `end()` method:
+            ```cpp
+            lt_ret_t ret = tropic01.end();
+            if (ret != LT_OK) {
+                // Your error handling.
+            }
+            ```
+       2. Free MbedTLS's PSA Crypto resources (could be ommitted if you know what you are doing):
+            ```cpp
+            mbedtls_psa_crypto_free();
+            ```
 
 ## Using Libtropic directly Inside PlatformIO (Advanced)
 It is also possible to use the C Libtropic API directly. However, this requires more advanced approach compared to using the C++ wrapper. But the entire Libtropic API will be available to you.
