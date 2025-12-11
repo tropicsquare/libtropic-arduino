@@ -3,6 +3,7 @@ import subprocess
 import shlex
 import re
 import json
+import platform
 
 Import("env", "projenv")
 
@@ -67,11 +68,13 @@ cmake_args = [
     "cmake",
     "-S", str(external_root),
     "-B", str(libtropic_build_dir),
-    # Add this line to pass linker flags during the initial test
-    "-DCMAKE_EXE_LINKER_FLAGS=--specs=nosys.specs",
     f"-DCMAKE_C_FLAGS={c_flags}",
     f"-DCMAKE_CXX_FLAGS={cxx_flags}"
 ]
+
+# Add linker flags only if not on macOS (nosys.specs is specific to ARM GCC)
+if platform.system() != "Darwin":
+    cmake_args.insert(5, "-DCMAKE_EXE_LINKER_FLAGS=--specs=nosys.specs")
 
 # pass toolchain compilers if provided by PlatformIO env
 if cc:
