@@ -13,7 +13,7 @@ This library provides support for using the TROPIC01 secure element in the Ardui
 
 1. Create a new PlatformIO project.
 2. Select supported board, as a framework choose "Arduino framework".
-3. Update `platformio.ini` with link to libtropic-arduino and set also serial port for uploading and communications:
+3. Inside your project's `platformio.ini` file, add a dependency on `libtropic-arduino` and set the serial port used for uploading and communication:
 
     ```
     [env:esp32dev]
