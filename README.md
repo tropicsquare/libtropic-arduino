@@ -36,7 +36,7 @@ This library provides support for using the TROPIC01 secure element in the Ardui
     Flash: [===       ]  29.2% (used 382757 bytes from 1310720 bytes)
     ==================== [SUCCESS] Took 1.13 seconds ======================
     ````
-6. Upload code into your board by clicking on `PlatformIO: Upload` in a bottom menu, you should see similar output in terminal:
+6. Upload the code: click on the **PlatformIO: Upload** button in the bottom menu. In your terminal, you should see a similar output to this:
     ```
     ...
     Writing at 0x00057433... (85 %)
