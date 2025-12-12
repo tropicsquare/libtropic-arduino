@@ -23,7 +23,7 @@ This library provides support for using the TROPIC01 secure element in the Ardui
 
     lib_deps =
         https://github.com/tropicsquare/libtropic-arduino.git
-    # (Update port based on how your board enumerated within your system)
+    # (Change to the port your board is mapped to in your system)
     upload_port = /dev/ttyUSB0
     ```
 
