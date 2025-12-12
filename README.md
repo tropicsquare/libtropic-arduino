@@ -49,7 +49,7 @@ This library provides support for using the TROPIC01 secure element in the Ardui
     Hard resetting via RTS pin...
     ```
 
-7. Now open your `Serial Monitor` and reset your board with `RESET BUTTON` next to USB connector, you should see that TROPC01 talks to you over encrypted secure channel!
+7. Observe the output from the example: open your **Serial Monitor** and reset your board using its reset button. In the Serial Monitor, you should see that TROPC01 talks to you over encrypted secure channel!
 
     ```
     ---- Opened the serial port /dev/ttyUSB0 ----
