@@ -73,7 +73,7 @@ Repeat the steps 1, 2, 3 from [Using LibtropicArduino Inside PlatformIO](../READ
                 // Your error handling.
             }
             ```
-        2. Free MbedTLS's PSA Crypto resources (could be ommitted if you know what you are doing):
+        2. Free MbedTLS's PSA Crypto resources (could be omitted if you know what you are doing):
             ```cpp
             mbedtls_psa_crypto_free();
             ```
