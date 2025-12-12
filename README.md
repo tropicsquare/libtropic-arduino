@@ -35,7 +35,7 @@ This library provides support for using the TROPIC01 secure element in the Ardui
     RAM:   [=         ]   8.7% (used 28572 bytes from 327680 bytes)
     Flash: [===       ]  29.2% (used 382757 bytes from 1310720 bytes)
     ==================== [SUCCESS] Took 1.13 seconds ======================
-    ````
+    ```
 6. Upload the code: click on the **PlatformIO: Upload** button in the bottom menu. In your terminal, you should see a similar output to this:
     ```
     ...
