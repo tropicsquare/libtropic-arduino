@@ -2,7 +2,7 @@
 This library provides support for using the TROPIC01 secure element in the Arduino framework. It's built on top of our [Libtropic SDK](https://github.com/tropicsquare/libtropic) and **currently works with PlatformIO only**!
 
 **Tested Boards:**
-* Espressif ESP32 Dev Module (ESP32 based)
+* Espressif ESP32-DevKitC V4
 
 **Supported API calls:**
 * Ping
