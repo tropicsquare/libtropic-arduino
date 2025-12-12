@@ -9,5 +9,5 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [0.1.0]
 ### Added
 - Support in PlatformIO.
-- minimal C++ wrapper around Libtropic.
+- Minimal C++ wrapper around Libtropic.
 - `hello_world` example
