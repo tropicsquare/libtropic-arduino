@@ -29,7 +29,7 @@ This library provides support for using the TROPIC01 secure element in the Ardui
 
 
 4. Now add example's code to your project: copy the whole content of `example/hello_world.ino` from this repository and paste it into `main.cpp` of **your project**
-5. Build project by clicking on `PlatformIO: Build` in a bottom menu, you should see similar output in terminal:
+5. Build the project: click on the **PlatformIO: Build** button in the bottom menu. In your terminal, you should see a similar output to this:
     ```
     ...
     RAM:   [=         ]   8.7% (used 28572 bytes from 327680 bytes)
