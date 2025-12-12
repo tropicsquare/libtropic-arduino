@@ -73,7 +73,7 @@ This library provides support for using the TROPIC01 secure element in the Ardui
 > [!IMPORTANT]
 > This library uses an Arduino-like C++ wrapper around [Libtropic](https://github.com/tropicsquare/libtropic). However, the implementation of this wrapper is not feature complete – this is your chance to try to implement some of the missing functionality and contribute to the library! If you would like to contribute, read the [contributing guidelines](./CONTRIBUTING.md) and send us a Pull Request!
 
-For more info check out [docs](docs/index.md) folder.
+For more detailed information, refer to the [docs/](docs/index.md) folder.
 
 ## FAQ
 If you encounter any issues, please check the [FAQ](docs/FAQ.md) before filing an issue or reaching out to our [support](https://support.desk.tropicsquare.com/).
