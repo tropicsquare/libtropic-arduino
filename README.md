@@ -1,5 +1,5 @@
 # libtropic-arduino
-This library helps you to use TROPIC01 security chip with some Arduino boards. It's built on top of our [Libtropic SDK](https://github.com/tropicsquare/libtropic) and **currently works with PlatformIO only**!
+This library provides support for using the TROPIC01 secure element in the Arduino framework. It's built on top of our [Libtropic SDK](https://github.com/tropicsquare/libtropic) and **currently works with PlatformIO only**!
 
 **Tested Boards:**
 * Espressif ESP32 Dev Module (ESP32 based)
