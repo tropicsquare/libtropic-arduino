@@ -4,8 +4,10 @@ This library provides support for using the TROPIC01 secure element in the Ardui
 **Tested Boards:**
 * Espressif ESP32-DevKitC V4
 
-**Supported API calls:**
-* Ping
+**Current API:**
+* `secureSessionStart`
+* `secureSessionEnd`
+* `ping`
 
 ## Using LibtropicArduino Inside PlatformIO
 
