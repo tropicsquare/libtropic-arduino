@@ -81,10 +81,10 @@ lt_ret_t Tropic01::eccKeyStore(const lt_ecc_slot_t slot, const lt_ecc_curve_type
     return lt_ecc_key_store(&this->handle, slot, curve, key);
 }
 
-lt_ret_t Tropic01::eccKeyRead(const lt_ecc_slot_t slot, uint8_t *key, const uint8_t key_max_size,
-                              lt_ecc_curve_type_t *curve, lt_ecc_key_origin_t *origin)
+lt_ret_t Tropic01::eccKeyRead(const lt_ecc_slot_t slot, uint8_t key[], const uint8_t keyMaxSize,
+                              lt_ecc_curve_type_t &curve, lt_ecc_key_origin_t &origin)
 {
-    return lt_ecc_key_read(&this->handle, slot, key, key_max_size, curve, origin);
+    return lt_ecc_key_read(&this->handle, slot, key, keyMaxSize, &curve, &origin);
 }
 
 lt_ret_t Tropic01::eccKeyErase(const lt_ecc_slot_t slot) { return lt_ecc_key_erase(&this->handle, slot); }
