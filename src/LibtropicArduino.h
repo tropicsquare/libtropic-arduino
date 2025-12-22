@@ -60,7 +60,7 @@ class Tropic01 {
      * @brief Initializes resources. Must be called before all other methods are called.
      *
      * @retval  LT_OK  Method executed successfully
-     * @retval  other  Method did not execute successully, you might use lt_ret_verbose() to get verbose
+     * @retval  other  Method did not execute successfully, you might use lt_ret_verbose() to get verbose
      * encoding of returned value
      */
     lt_ret_t begin(void);
@@ -69,7 +69,7 @@ class Tropic01 {
      * @brief Deinitialize resources. Should be called at the end of the program.
      *
      * @retval  LT_OK  Method executed successfully
-     * @retval  other  Method did not execute successully, you might use lt_ret_verbose() to get verbose
+     * @retval  other  Method did not execute successfully, you might use lt_ret_verbose() to get verbose
      * encoding of returned value
      */
     lt_ret_t end(void);
@@ -82,7 +82,7 @@ class Tropic01 {
      * @param pkeyIndex[in]   Pairing key index
      *
      * @retval                LT_OK Method executed successfully
-     * @retval                other Method did not execute successully, you might use lt_ret_verbose() to get verbose
+     * @retval                other Method did not execute successfully, you might use lt_ret_verbose() to get verbose
      * encoding of returned value
      */
     lt_ret_t secureSessionStart(const uint8_t shiPriv[], const uint8_t shiPub[], const lt_pkey_index_t pkeyIndex);
@@ -91,7 +91,7 @@ class Tropic01 {
      * @brief Aborts Secure Channel Session with TROPIC01.
      *
      * @retval  LT_OK Method executed successfully
-     * @retval  other Method did not execute successully, you might use lt_ret_verbose() to get verbose
+     * @retval  other Method did not execute successfully, you might use lt_ret_verbose() to get verbose
      * encoding of returned value
      */
     lt_ret_t secureSessionEnd(void);
@@ -105,7 +105,7 @@ class Tropic01 {
      * @param msgLen[in]  Length of both messages (msgOut and msgIn)
      *
      * @retval             LT_OK Function executed successfully
-     * @retval             other Function did not execute successully, you might use lt_ret_verbose() to get verbose
+     * @retval             other Function did not execute successfully, you might use lt_ret_verbose() to get verbose
      * encoding
      */
     lt_ret_t ping(const char msgOut[], char msgIn[], const uint16_t msgLen);
@@ -120,7 +120,7 @@ class Tropic01 {
      * FW version >=2.0.0)
      *
      * @retval               LT_OK Method executed successfully
-     * @retval               other Method did not execute successully, you might use lt_ret_verbose() to get verbose
+     * @retval               other Method did not execute successfully, you might use lt_ret_verbose() to get verbose
      * encoding of returned value
      */
     lt_ret_t rMemWrite(const uint16_t udataSlot, const uint8_t data[], const uint16_t dataSize);
@@ -134,7 +134,7 @@ class Tropic01 {
      * @param dataReadSize[out]  Number of bytes read from TROPIC01 slot into data buffer
      *
      * @retval                   LT_OK Method executed successfully
-     * @retval                   other Method did not execute successully, you might use lt_ret_verbose() to get
+     * @retval                   other Method did not execute successfully, you might use lt_ret_verbose() to get
      * verbose encoding of returned value
      */
     lt_ret_t rMemRead(const uint16_t udataSlot, uint8_t data[], const uint16_t dataMaxSize, uint16_t &dataReadSize);
@@ -145,7 +145,7 @@ class Tropic01 {
      * @param udataSlot[in]  Memory slot to be erased (0 - TR01_R_MEM_DATA_SLOT_MAX)
      *
      * @retval                LT_OK Method executed successfully
-     * @retval                other Method did not execute successully, you might use lt_ret_verbose() to get verbose
+     * @retval                other Method did not execute successfully, you might use lt_ret_verbose() to get verbose
      * encoding of returned value
      */
     lt_ret_t rMemErase(const uint16_t udataSlot);
