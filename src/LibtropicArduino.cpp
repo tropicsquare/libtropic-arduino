@@ -89,9 +89,9 @@ lt_ret_t Tropic01::eccKeyRead(const lt_ecc_slot_t slot, uint8_t *key, const uint
 
 lt_ret_t Tropic01::eccKeyErase(const lt_ecc_slot_t slot) { return lt_ecc_key_erase(&this->handle, slot); }
 
-lt_ret_t Tropic01::ecdsaSign(const lt_ecc_slot_t slot, const uint8_t *msg, const uint32_t msg_len, uint8_t *rs)
+lt_ret_t Tropic01::ecdsaSign(const lt_ecc_slot_t slot, const uint8_t msg[], const uint32_t msgLen, uint8_t rs[])
 {
-    return lt_ecc_ecdsa_sign(&this->handle, slot, msg, msg_len, rs);
+    return lt_ecc_ecdsa_sign(&this->handle, slot, msg, msgLen, rs);
 }
 
 lt_ret_t Tropic01::eddsaSign(const lt_ecc_slot_t slot, const uint8_t *msg, const uint16_t msg_len, uint8_t *rs)

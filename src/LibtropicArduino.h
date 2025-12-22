@@ -167,14 +167,14 @@ class Tropic01 {
      *
      * @param slot[in]     Slot containing a private key (TR01_ECC_SLOT_0 - TR01_ECC_SLOT_31)
      * @param msg[in]      Buffer containing a message to sign
-     * @param msg_len[in]  Length of the message
+     * @param msgLen[in]   Length of the message
      * @param rs[out]      Buffer for storing signature R and S bytes (must be 64 bytes)
      *
      * @retval             LT_OK Method executed successfully
      * @retval             other Method did not execute successully, you might use lt_ret_verbose() to get verbose
      * encoding of returned value
      */
-    lt_ret_t ecdsaSign(const lt_ecc_slot_t slot, const uint8_t *msg, const uint32_t msg_len, uint8_t *rs);
+    lt_ret_t ecdsaSign(const lt_ecc_slot_t slot, const uint8_t msg[], const uint32_t msgLen, uint8_t rs[]);
 
     /**
      * @brief Performs EdDSA signature of a message with a private ECC key stored in TROPIC01.
