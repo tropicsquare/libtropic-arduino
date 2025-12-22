@@ -59,7 +59,7 @@ lt_ret_t Tropic01::end(void)
     return ret_deinit;
 }
 
-lt_ret_t Tropic01::secureSessionStart(const uint8_t *shipriv, const uint8_t *shipub, const lt_pkey_index_t pkey_index)
+lt_ret_t Tropic01::secureSessionStart(const uint8_t shipriv[], const uint8_t shipub[], const lt_pkey_index_t pkey_index)
 {
     return lt_verify_chip_and_start_secure_session(&this->handle, shipriv, shipub, pkey_index);
 }

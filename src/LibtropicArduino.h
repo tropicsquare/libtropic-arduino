@@ -85,7 +85,7 @@ class Tropic01 {
      * @retval                other Method did not execute successully, you might use lt_ret_verbose() to get verbose
      * encoding of returned value
      */
-    lt_ret_t secureSessionStart(const uint8_t *shipriv, const uint8_t *shipub, const lt_pkey_index_t pkey_index);
+    lt_ret_t secureSessionStart(const uint8_t shipriv[], const uint8_t shipub[], const lt_pkey_index_t pkey_index);
 
     /**
      * @brief Aborts Secure Channel Session with TROPIC01.
