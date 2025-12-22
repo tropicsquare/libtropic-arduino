@@ -113,42 +113,42 @@ class Tropic01 {
     /**
      * @brief Writes bytes into a given slot of the User Partition in the R memory.
      *
-     * @param udata_slot[in]  Memory slot to be written (0 - TR01_R_MEM_DATA_SLOT_MAX)
-     * @param data[in]        Buffer of data to be written into R memory slot
-     * @param data_size[in]   Size of data to be written into slot. Minimal size is TR01_R_MEM_DATA_SIZE_MIN, maximal
-     * size depends on TROPIC01 internal firmware and is either 444 (TROPIC01 fw version <2.0.0) or 475 (TROPIC01 fw
-     * version >=2.0.0)
+     * @param udataSlot[in]  Memory slot to be written (0 - TR01_R_MEM_DATA_SLOT_MAX)
+     * @param data[in]       Buffer of data to be written into R memory slot
+     * @param dataSize[in]   Size of data to be written into slot. Minimal size is TR01_R_MEM_DATA_SIZE_MIN, maximal
+     * size depends on TROPIC01 Application FW and is either 444B (TROPIC01 App FW version <2.0.0) or 475B (TROPIC01 App
+     * FW version >=2.0.0)
      *
-     * @retval                LT_OK Method executed successfully
-     * @retval                other Method did not execute successully, you might use lt_ret_verbose() to get verbose
+     * @retval               LT_OK Method executed successfully
+     * @retval               other Method did not execute successully, you might use lt_ret_verbose() to get verbose
      * encoding of returned value
      */
-    lt_ret_t rMemWrite(const uint16_t udata_slot, const uint8_t *data, const uint16_t data_size);
+    lt_ret_t rMemWrite(const uint16_t udataSlot, const uint8_t data[], const uint16_t dataSize);
 
     /**
      * @brief Reads bytes from a given slot of the User Partition in the R memory.
      *
-     * @param udata_slot[in]       Memory slot to be read (0 - TR01_R_MEM_DATA_SLOT_MAX)
-     * @param data[out]            Buffer to read data into
-     * @param data_max_size[in]    Size of the data buffer
-     * @param data_read_size[out]  Number of bytes read from TROPIC01 slot into data buffer
+     * @param udataSlot[in]      Memory slot to be read (0 - TR01_R_MEM_DATA_SLOT_MAX)
+     * @param data[out]          Buffer to read data into
+     * @param dataMaxSize[in]    Size of the data buffer
+     * @param dataReadSize[out]  Number of bytes read from TROPIC01 slot into data buffer
      *
-     * @retval                     LT_OK Method executed successfully
-     * @retval                     other Method did not execute successully, you might use lt_ret_verbose() to get
+     * @retval                   LT_OK Method executed successfully
+     * @retval                   other Method did not execute successully, you might use lt_ret_verbose() to get
      * verbose encoding of returned value
      */
-    lt_ret_t rMemRead(const uint16_t udata_slot, uint8_t *data, const uint16_t data_max_size, uint16_t *data_read_size);
+    lt_ret_t rMemRead(const uint16_t udataSlot, uint8_t data[], const uint16_t dataMaxSize, uint16_t &dataReadSize);
 
     /**
      * @brief Erases the given slot of the User Partition in the R memory.
      *
-     * @param udata_slot[in]  Memory slot to be erased (0 - TR01_R_MEM_DATA_SLOT_MAX)
+     * @param udataSlot[in]  Memory slot to be erased (0 - TR01_R_MEM_DATA_SLOT_MAX)
      *
      * @retval                LT_OK Method executed successfully
      * @retval                other Method did not execute successully, you might use lt_ret_verbose() to get verbose
      * encoding of returned value
      */
-    lt_ret_t rMemErase(const uint16_t udata_slot);
+    lt_ret_t rMemErase(const uint16_t udataSlot);
 
    private:
     lt_dev_arduino_t device;
