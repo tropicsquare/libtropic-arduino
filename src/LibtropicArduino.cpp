@@ -8,35 +8,35 @@
 
 #include "LibtropicArduino.h"
 
-Tropic01::Tropic01(const uint16_t spi_cs_pin
+Tropic01::Tropic01(const uint16_t spiCSPin
 #if LT_USE_INT_PIN
                    ,
-                   const uint16_t int_gpio_pin
+                   const uint16_t intGpioPin
 #endif
 #if LT_SEPARATE_L3_BUFF
                    ,
-                   uint8_t l3_buff[], const uint16_t l3_buff_len
+                   uint8_t l3Buff[], const uint16_t l3BuffLen
 #endif
                    ,
-                   const unsigned int rng_seed, SPIClass &spi, SPISettings spi_settings)
+                   const unsigned int rngSeed, SPIClass &spi, SPISettings spiSettings)
 {
     // Initialize device structure
-    this->device.spi_cs_pin = spi_cs_pin;
+    this->device.spi_cs_pin = spiCSPin;
 #if LT_USE_INT_PIN
-    this->device.int_gpio_pin = int_gpio_pin;
+    this->device.int_gpio_pin = intGpioPin;
 #endif
-    this->device.spi_settings = spi_settings;
-    this->device.rng_seed = rng_seed;
+    this->device.spi_settings = spiSettings;
+    this->device.rng_seed = rngSeed;
     this->device.spi = &spi;
     // Pass device structure to handle
     this->handle.l2.device = &this->device;
 
     // Initialize crypto context structure and pass to handle
-    this->handle.l3.crypto_ctx = &this->crypto_ctx;
+    this->handle.l3.crypto_ctx = &this->cryptoCtx;
 
 #if LT_SEPARATE_L3_BUFF
-    this->handle.l3.buff = l3_buff;
-    this->handle.l3.buff_len = l3_buff_len;
+    this->handle.l3.buff = l3Buff;
+    this->handle.l3.buff_len = l3BuffLen;
 #endif
 }
 
@@ -59,14 +59,14 @@ lt_ret_t Tropic01::end(void)
     return ret_deinit;
 }
 
-lt_ret_t Tropic01::secureSessionStart(const uint8_t shipriv[], const uint8_t shipub[], const lt_pkey_index_t pkey_index)
+lt_ret_t Tropic01::secureSessionStart(const uint8_t shiPriv[], const uint8_t shiPub[], const lt_pkey_index_t pkeyIndex)
 {
-    return lt_verify_chip_and_start_secure_session(&this->handle, shipriv, shipub, pkey_index);
+    return lt_verify_chip_and_start_secure_session(&this->handle, shiPriv, shiPub, pkeyIndex);
 }
 
 lt_ret_t Tropic01::secureSessionEnd(void) { return lt_session_abort(&this->handle); }
 
-lt_ret_t Tropic01::ping(const char msg_out[], char msg_in[], const uint16_t msg_len)
+lt_ret_t Tropic01::ping(const char msgOut[], char msgIn[], const uint16_t msgLen)
 {
-    return lt_ping(&this->handle, (uint8_t *)msg_out, (uint8_t *)msg_in, msg_len);
+    return lt_ping(&this->handle, (uint8_t *)msgOut, (uint8_t *)msgIn, msgLen);
 }
