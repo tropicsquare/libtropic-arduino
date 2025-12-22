@@ -60,7 +60,7 @@ class Tropic01 {
      * @brief Initializes resources. Must be called before all other methods are called.
      *
      * @retval  LT_OK  Method executed successfully
-     * @retval  other  Method did not execute successully, you might use lt_ret_verbose() to get verbose
+     * @retval  other  Method did not execute successfully, you might use lt_ret_verbose() to get verbose
      * encoding of returned value
      */
     lt_ret_t begin(void);
@@ -69,7 +69,7 @@ class Tropic01 {
      * @brief Deinitialize resources. Should be called at the end of the program.
      *
      * @retval  LT_OK  Method executed successfully
-     * @retval  other  Method did not execute successully, you might use lt_ret_verbose() to get verbose
+     * @retval  other  Method did not execute successfully, you might use lt_ret_verbose() to get verbose
      * encoding of returned value
      */
     lt_ret_t end(void);
@@ -82,7 +82,7 @@ class Tropic01 {
      * @param pkeyIndex[in]   Pairing key index
      *
      * @retval                LT_OK Method executed successfully
-     * @retval                other Method did not execute successully, you might use lt_ret_verbose() to get verbose
+     * @retval                other Method did not execute successfully, you might use lt_ret_verbose() to get verbose
      * encoding of returned value
      */
     lt_ret_t secureSessionStart(const uint8_t shiPriv[], const uint8_t shiPub[], const lt_pkey_index_t pkeyIndex);
@@ -91,7 +91,7 @@ class Tropic01 {
      * @brief Aborts Secure Channel Session with TROPIC01.
      *
      * @retval  LT_OK Method executed successfully
-     * @retval  other Method did not execute successully, you might use lt_ret_verbose() to get verbose
+     * @retval  other Method did not execute successfully, you might use lt_ret_verbose() to get verbose
      * encoding of returned value
      */
     lt_ret_t secureSessionEnd(void);
@@ -105,7 +105,7 @@ class Tropic01 {
      * @param msgLen[in]  Length of both messages (msgOut and msgIn)
      *
      * @retval             LT_OK Function executed successfully
-     * @retval             other Function did not execute successully, you might use lt_ret_verbose() to get verbose
+     * @retval             other Function did not execute successfully, you might use lt_ret_verbose() to get verbose
      * encoding
      */
     lt_ret_t ping(const char msgOut[], char msgIn[], const uint16_t msgLen);
@@ -117,7 +117,7 @@ class Tropic01 {
      * @param curve[in]  Type of ECC curve (TR01_CURVE_ED25519 or TR01_CURVE_P256)
      *
      * @retval           LT_OK Method executed successfully
-     * @retval           other Method did not execute successully, you might use lt_ret_verbose() to get verbose
+     * @retval           other Method did not execute successfully, you might use lt_ret_verbose() to get verbose
      * encoding of returned value
      */
     lt_ret_t eccKeyGenerate(const lt_ecc_slot_t slot, const lt_ecc_curve_type_t curve);
@@ -130,7 +130,7 @@ class Tropic01 {
      * @param key[in]    Private key to store (32 bytes)
      *
      * @retval           LT_OK Method executed successfully
-     * @retval           other Method did not execute successully, you might use lt_ret_verbose() to get verbose
+     * @retval           other Method did not execute successfully, you might use lt_ret_verbose() to get verbose
      * encoding of returned value
      */
     lt_ret_t eccKeyStore(const lt_ecc_slot_t slot, const lt_ecc_curve_type_t curve, const uint8_t key[]);
@@ -145,7 +145,7 @@ class Tropic01 {
      * @param origin[out]       Origin of the public key (TR01_CURVE_GENERATED or TR01_CURVE_STORED)
      *
      * @retval                  LT_OK Method executed successfully
-     * @retval                  other Method did not execute successully, you might use lt_ret_verbose() to get verbose
+     * @retval                  other Method did not execute successfully, you might use lt_ret_verbose() to get verbose
      * encoding of returned value
      */
     lt_ret_t eccKeyRead(const lt_ecc_slot_t slot, uint8_t key[], const uint8_t keyMaxSize, lt_ecc_curve_type_t &curve,
@@ -157,7 +157,7 @@ class Tropic01 {
      * @param slot[in]  Slot number (TR01_ECC_SLOT_0 - TR01_ECC_SLOT_31)
      *
      * @retval          LT_OK Method executed successfully
-     * @retval          other Method did not execute successully, you might use lt_ret_verbose() to get verbose
+     * @retval          other Method did not execute successfully, you might use lt_ret_verbose() to get verbose
      * encoding of returned value
      */
     lt_ret_t eccKeyErase(const lt_ecc_slot_t slot);
@@ -171,7 +171,7 @@ class Tropic01 {
      * @param rs[out]      Buffer for storing signature R and S bytes (must be 64 bytes)
      *
      * @retval             LT_OK Method executed successfully
-     * @retval             other Method did not execute successully, you might use lt_ret_verbose() to get verbose
+     * @retval             other Method did not execute successfully, you might use lt_ret_verbose() to get verbose
      * encoding of returned value
      */
     lt_ret_t ecdsaSign(const lt_ecc_slot_t slot, const uint8_t msg[], const uint32_t msgLen, uint8_t rs[]);
@@ -185,7 +185,7 @@ class Tropic01 {
      * @param rs[out]      Buffer for storing signature R and S bytes (must be 64 bytes)
      *
      * @retval             LT_OK Method executed successfully
-     * @retval             other Method did not execute successully, you might use lt_ret_verbose() to get verbose
+     * @retval             other Method did not execute successfully, you might use lt_ret_verbose() to get verbose
      * encoding of returned value
      */
     lt_ret_t eddsaSign(const lt_ecc_slot_t slot, const uint8_t msg[], const uint16_t msgLen, uint8_t rs[]);
