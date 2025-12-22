@@ -75,7 +75,7 @@ lt_ret_t returnVal;  // Used for return values of Tropic01's methods.
 
 // Message to sign.
 const char message[] = "Hello TROPIC01! This message will be signed with ECDSA P-256.";
-const uint32_t messageLen = sizeof(message) - 1;  // Exclude null terminator
+const uint32_t messageLen = sizeof(message) - 1;  // Exclude null terminator.
 
 // Buffers for P-256 operations.
 uint8_t p256PubKey[TR01_CURVE_P256_PUBKEY_LEN];
