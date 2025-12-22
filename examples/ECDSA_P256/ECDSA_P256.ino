@@ -225,7 +225,7 @@ void setup()
     Serial.println("Generating P-256 key in slot 1...");
     returnVal = tropic01.eccKeyGenerate(ECC_SLOT_P256, TR01_CURVE_P256);
     if (returnVal != LT_OK) {
-        Serial.print("  eccKeyGenerate() failed, returnVal=");
+        Serial.print("  Tropic01.eccKeyGenerate() failed, returnVal=");
         Serial.println(returnVal);
         errorHandler();
     }
