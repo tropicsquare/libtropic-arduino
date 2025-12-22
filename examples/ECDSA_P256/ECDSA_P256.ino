@@ -105,7 +105,7 @@ static void errorHandler(void)
 }
 
 // Helper function to print hex buffer.
-static void printHex(const char *label, const uint8_t *data, size_t len)
+static void printHex(const char *label, const uint8_t *data, const size_t len)
 {
     Serial.print(label);
     Serial.print(": ");
