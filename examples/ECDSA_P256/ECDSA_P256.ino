@@ -235,7 +235,7 @@ void setup()
     Serial.println("Reading P-256 public key from slot 1...");
     returnVal = tropic01.eccKeyRead(ECC_SLOT_P256, p256PubKey, sizeof(p256PubKey), &curveType, &keyOrigin);
     if (returnVal != LT_OK) {
-        Serial.print("  eccKeyRead() failed, returnVal=");
+        Serial.print("  Tropic01.eccKeyRead() failed, returnVal=");
         Serial.println(returnVal);
         errorHandler();
     }
