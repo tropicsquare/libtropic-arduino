@@ -182,6 +182,19 @@ void loop()
     uint16_t stringLen = strlen(testString);
     memcpy(writeBuffer, testString, stringLen);
 
+    // Erase the slot before writing so the write does not fail if the slot was already written.
+    Serial.print("Erasing slot ");
+    Serial.print(R_MEM_SLOT_FOR_STRING);
+    Serial.println("...");
+    returnVal = tropic01.rMemErase(R_MEM_SLOT_FOR_STRING);
+    if (returnVal != LT_OK) {
+        Serial.print("  Tropic01.rMemErase() failed, returnVal=");
+        Serial.println(returnVal);
+        errorHandler();
+    }
+    Serial.println("  OK - Slot erased successfully");
+    Serial.println();
+
     Serial.print("Writing string to slot ");
     Serial.print(R_MEM_SLOT_FOR_STRING);
     Serial.println("...");
