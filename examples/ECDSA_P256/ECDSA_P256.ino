@@ -100,8 +100,7 @@ static void errorHandler(void)
     mbedtls_psa_crypto_free();  // Frees MbedTLS's PSA Crypto resources.
 
     Serial.println("Cleanup finished, entering infinite loop...");
-    while (true)
-        ;
+    while (true);
 }
 
 // Helper function to print hex buffer.
@@ -121,7 +120,8 @@ static void printHex(const char *label, const uint8_t *data, const size_t len)
 }
 
 // Verify ECDSA signature using MbedTLS PSA Crypto.
-static bool verifyECDSA(const uint8_t *pubKey, const uint8_t *message, const size_t messageLen, const uint8_t *signature)
+static bool verifyECDSA(const uint8_t *pubKey, const uint8_t *message, const size_t messageLen,
+                        const uint8_t *signature)
 {
     psa_key_attributes_t attributes = PSA_KEY_ATTRIBUTES_INIT;
     psa_key_id_t keyId = 0;
@@ -181,8 +181,7 @@ cleanup:
 void setup()
 {
     Serial.begin(9600);
-    while (!Serial)
-        ;  // Wait for serial port to connect (useful for native USB)
+    while (!Serial);  // Wait for serial port to connect (useful for native USB)
 
     Serial.println("===============================================================");
     Serial.println("============ TROPIC01 ECDSA P-256 Sign & Verify ===============");
@@ -221,6 +220,15 @@ void setup()
     }
     Serial.println("  OK");
 
+    Serial.println("---------------------------------------------------------------");
+    Serial.println();
+    Serial.println("---------------------------- Loop -----------------------------");
+}
+// -----------------------------------------------------------------------------------------------------
+
+// ------------------------------------------ Loop function --------------------------------------------
+void loop()
+{
     // Generate P-256 key in slot 1.
     Serial.println("Generating P-256 key in slot 1...");
     returnVal = tropic01.eccKeyGenerate(ECC_SLOT_P256, TR01_CURVE_P256);
@@ -284,14 +292,11 @@ void setup()
         errorHandler();
     }
     Serial.println("  OK");
-    Serial.println("---------------------------------------------------------------");
-}
-// -----------------------------------------------------------------------------------------------------
 
-// ------------------------------------------ Loop function --------------------------------------------
-void loop()
-{
-    // Everything is done in setup, so just do nothing in loop.
-    delay(1000);
+    Serial.println();
+    Serial.println("Entering an idle loop");
+    Serial.println("---------------------------------------------------------------");
+
+    while (true);  // Do nothing, end of example.
 }
 // -----------------------------------------------------------------------------------------------------
