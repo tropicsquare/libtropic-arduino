@@ -100,8 +100,7 @@ static void errorHandler(void)
     mbedtls_psa_crypto_free();  // Frees MbedTLS's PSA Crypto resources.
 
     Serial.println("Cleanup finished, entering infinite loop...");
-    while (true)
-        ;
+    while (true);
 }
 
 // Helper function to print hex buffer.
@@ -131,8 +130,7 @@ static void printHex(const char *label, const uint8_t *data, size_t len)
 void setup()
 {
     Serial.begin(9600);
-    while (!Serial)
-        ;  // Wait for serial port to connect (useful for native USB)
+    while (!Serial);  // Wait for serial port to connect (useful for native USB)
 
     Serial.println("===============================================================");
     Serial.println("========== TROPIC01 EdDSA Ed25519 Sign & Verify ===============");
@@ -171,6 +169,15 @@ void setup()
     }
     Serial.println("  OK");
 
+    Serial.println("---------------------------------------------------------------");
+    Serial.println();
+    Serial.println("---------------------------- Loop -----------------------------");
+}
+// -----------------------------------------------------------------------------------------------------
+
+// ------------------------------------------ Loop function --------------------------------------------
+void loop()
+{
     // Generate Ed25519 key in slot 1.
     Serial.println("Generating Ed25519 key in slot 1...");
     returnVal = tropic01.eccKeyGenerate(ECC_SLOT_ED25519, TR01_CURVE_ED25519);
@@ -226,14 +233,11 @@ void setup()
         errorHandler();
     }
     Serial.println("  OK");
-    Serial.println("---------------------------------------------------------------");
-}
-// -----------------------------------------------------------------------------------------------------
 
-// ------------------------------------------ Loop function --------------------------------------------
-void loop()
-{
-    // Everything is done in setup, so just do nothing in loop.
-    delay(1000);
+    Serial.println();
+    Serial.println("Entering an idle loop");
+    Serial.println("---------------------------------------------------------------");
+
+    while (true);  // Do nothing, end of example.
 }
 // -----------------------------------------------------------------------------------------------------
