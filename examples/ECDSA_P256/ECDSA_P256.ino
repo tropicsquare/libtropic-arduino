@@ -91,9 +91,9 @@ lt_ecc_key_origin_t keyOrigin;
 psa_status_t psaStatus;
 // -----------------------------------------------------------------------------------------------------
 
-// ---------------------------------------- Utility functions ------------------------------------------
+// ---------------------------------------- Static local functions ------------------------------------------
 // Used when some error occurs.
-void errorHandler(void)
+static void errorHandler(void)
 {
     Serial.println("Starting cleanup...");
     tropic01.end();             // Aborts all communication with TROPIC01 and frees resources.
@@ -105,7 +105,7 @@ void errorHandler(void)
 }
 
 // Helper function to print hex buffer.
-void printHex(const char *label, const uint8_t *data, size_t len)
+static void printHex(const char *label, const uint8_t *data, size_t len)
 {
     Serial.print(label);
     Serial.print(": ");
@@ -121,7 +121,7 @@ void printHex(const char *label, const uint8_t *data, size_t len)
 }
 
 // Verify ECDSA signature using MbedTLS PSA Crypto.
-bool verifyECDSA(const uint8_t *pubKey, const uint8_t *message, size_t messageLen, const uint8_t *signature)
+static bool verifyECDSA(const uint8_t *pubKey, const uint8_t *message, size_t messageLen, const uint8_t *signature)
 {
     psa_key_attributes_t attributes = PSA_KEY_ATTRIBUTES_INIT;
     psa_key_id_t keyId = 0;
@@ -221,12 +221,6 @@ void setup()
     }
     Serial.println("  OK");
 
-    Serial.println("---------------------------------------------------------------");
-    Serial.println();
-
-    Serial.println("==================== P-256 (ECDSA) Operations =================");
-    Serial.println();
-
     // Generate P-256 key in slot 1.
     Serial.println("Generating P-256 key in slot 1...");
     returnVal = tropic01.eccKeyGenerate(ECC_SLOT_P256, TR01_CURVE_P256);
@@ -274,10 +268,10 @@ void setup()
     // Verify P-256 signature.
     Serial.println("Verifying P-256 signature on host...");
     if (verifyECDSA(p256PubKey, (const uint8_t *)message, messageLen, p256Signature)) {
-        Serial.println("  ✓ P-256 signature verification PASSED!");
+        Serial.println("  P-256 signature verification PASSED!");
     }
     else {
-        Serial.println("  ✗ P-256 signature verification FAILED!");
+        Serial.println("  P-256 signature verification FAILED!");
     }
     Serial.println();
 
@@ -290,8 +284,6 @@ void setup()
         errorHandler();
     }
     Serial.println("  OK");
-
-    Serial.println("==================== Example Completed! =======================");
 }
 // -----------------------------------------------------------------------------------------------------
 
