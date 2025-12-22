@@ -71,6 +71,34 @@ lt_ret_t Tropic01::ping(const char msgOut[], char msgIn[], const uint16_t msgLen
     return lt_ping(&this->handle, (uint8_t *)msgOut, (uint8_t *)msgIn, msgLen);
 }
 
+lt_ret_t Tropic01::eccKeyGenerate(const lt_ecc_slot_t slot, const lt_ecc_curve_type_t curve)
+{
+    return lt_ecc_key_generate(&this->handle, slot, curve);
+}
+
+lt_ret_t Tropic01::eccKeyStore(const lt_ecc_slot_t slot, const lt_ecc_curve_type_t curve, const uint8_t key[])
+{
+    return lt_ecc_key_store(&this->handle, slot, curve, key);
+}
+
+lt_ret_t Tropic01::eccKeyRead(const lt_ecc_slot_t slot, uint8_t key[], const uint8_t keyMaxSize,
+                              lt_ecc_curve_type_t &curve, lt_ecc_key_origin_t &origin)
+{
+    return lt_ecc_key_read(&this->handle, slot, key, keyMaxSize, &curve, &origin);
+}
+
+lt_ret_t Tropic01::eccKeyErase(const lt_ecc_slot_t slot) { return lt_ecc_key_erase(&this->handle, slot); }
+
+lt_ret_t Tropic01::ecdsaSign(const lt_ecc_slot_t slot, const uint8_t msg[], const uint32_t msgLen, uint8_t rs[])
+{
+    return lt_ecc_ecdsa_sign(&this->handle, slot, msg, msgLen, rs);
+}
+
+lt_ret_t Tropic01::eddsaSign(const lt_ecc_slot_t slot, const uint8_t msg[], const uint16_t msgLen, uint8_t rs[])
+{
+    return lt_ecc_eddsa_sign(&this->handle, slot, msg, msgLen, rs);
+}
+
 lt_ret_t Tropic01::rMemWrite(const uint16_t udataSlot, const uint8_t data[], const uint16_t dataSize)
 {
     return lt_r_mem_data_write(&this->handle, udataSlot, data, dataSize);
@@ -83,3 +111,4 @@ lt_ret_t Tropic01::rMemRead(const uint16_t udataSlot, uint8_t data[], const uint
 }
 
 lt_ret_t Tropic01::rMemErase(const uint16_t udataSlot) { return lt_r_mem_data_erase(&this->handle, udataSlot); }
+
