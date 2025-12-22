@@ -183,7 +183,7 @@ void setup()
 
     // Read Ed25519 public key from slot 1.
     Serial.println("Reading Ed25519 public key from slot 1...");
-    returnVal = tropic01.eccKeyRead(ECC_SLOT_ED25519, ed25519PubKey, sizeof(ed25519PubKey), &curveType, &keyOrigin);
+    returnVal = tropic01.eccKeyRead(ECC_SLOT_ED25519, ed25519PubKey, sizeof(ed25519PubKey), curveType, keyOrigin);
     if (returnVal != LT_OK) {
         Serial.print("  eccKeyRead() failed, returnVal=");
         Serial.println(returnVal);
