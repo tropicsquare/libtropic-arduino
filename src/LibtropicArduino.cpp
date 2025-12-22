@@ -98,3 +98,17 @@ lt_ret_t Tropic01::eddsaSign(const lt_ecc_slot_t slot, const uint8_t msg[], cons
 {
     return lt_ecc_eddsa_sign(&this->handle, slot, msg, msgLen, rs);
 }
+
+lt_ret_t Tropic01::rMemWrite(const uint16_t udataSlot, const uint8_t data[], const uint16_t dataSize)
+{
+    return lt_r_mem_data_write(&this->handle, udataSlot, data, dataSize);
+}
+
+lt_ret_t Tropic01::rMemRead(const uint16_t udataSlot, uint8_t data[], const uint16_t dataMaxSize,
+                            uint16_t &dataReadSize)
+{
+    return lt_r_mem_data_read(&this->handle, udataSlot, data, dataMaxSize, &dataReadSize);
+}
+
+lt_ret_t Tropic01::rMemErase(const uint16_t udataSlot) { return lt_r_mem_data_erase(&this->handle, udataSlot); }
+
