@@ -94,7 +94,7 @@ lt_ret_t Tropic01::ecdsaSign(const lt_ecc_slot_t slot, const uint8_t msg[], cons
     return lt_ecc_ecdsa_sign(&this->handle, slot, msg, msgLen, rs);
 }
 
-lt_ret_t Tropic01::eddsaSign(const lt_ecc_slot_t slot, const uint8_t *msg, const uint16_t msg_len, uint8_t *rs)
+lt_ret_t Tropic01::eddsaSign(const lt_ecc_slot_t slot, const uint8_t msg[], const uint16_t msgLen, uint8_t rs[])
 {
-    return lt_ecc_eddsa_sign(&this->handle, slot, msg, msg_len, rs);
+    return lt_ecc_eddsa_sign(&this->handle, slot, msg, msgLen, rs);
 }

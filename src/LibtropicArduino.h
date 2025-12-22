@@ -181,14 +181,14 @@ class Tropic01 {
      *
      * @param slot[in]     Slot containing a private key (TR01_ECC_SLOT_0 - TR01_ECC_SLOT_31)
      * @param msg[in]      Buffer containing a message to sign (max length 4096 bytes)
-     * @param msg_len[in]  Length of the message
+     * @param msgLen[in]   Length of the message
      * @param rs[out]      Buffer for storing signature R and S bytes (must be 64 bytes)
      *
      * @retval             LT_OK Method executed successfully
      * @retval             other Method did not execute successully, you might use lt_ret_verbose() to get verbose
      * encoding of returned value
      */
-    lt_ret_t eddsaSign(const lt_ecc_slot_t slot, const uint8_t *msg, const uint16_t msg_len, uint8_t *rs);
+    lt_ret_t eddsaSign(const lt_ecc_slot_t slot, const uint8_t msg[], const uint16_t msgLen, uint8_t rs[]);
 
    private:
     lt_dev_arduino_t device;
