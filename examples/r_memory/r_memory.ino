@@ -1,6 +1,6 @@
 /**
  * @file r_memory.ino
- * @brief TROPIC01 R Memory example using the C++ wrapper for libtropic.
+ * @brief TROPIC01 R Memory example using the C++ wrapper.
  * @copyright Copyright (c) 2020-2025 Tropic Square s.r.o.
  *
  * @license For the license see file LICENSE.txt file in the root directory of this source tree.
@@ -51,7 +51,7 @@
 #define PAIRING_KEY_SLOT TR01_PAIRING_KEY_SLOT_INDEX_0
 
 // R Memory slot definitions - using different slots for different data types.
-#define R_MEM_SLOT_STRING 10  // Slot for string data
+#define R_MEM_SLOT_FOR_STRING 10  // Slot for string data
 // -----------------------------------------------------------------------------------------------------
 
 // ------------------------------------ TROPIC01 related variables -------------------------------------
@@ -93,12 +93,11 @@ static void errorHandler(void)
     mbedtls_psa_crypto_free();  // Frees MbedTLS's PSA Crypto resources.
 
     Serial.println("Cleanup finished, entering infinite loop...");
-    while (true)
-        ;
+    while (true);
 }
 
 // Helper function to print hex buffer.
-static void printHex(const char *label, const uint8_t *data, size_t len)
+static void printHex(const char *label, const uint8_t *data, const size_t len)
 {
     Serial.print(label);
     Serial.print(": ");
@@ -115,7 +114,7 @@ static void printHex(const char *label, const uint8_t *data, size_t len)
 }
 
 // Helper function to compare buffers.
-static bool compareBuffers(const uint8_t *buf1, const uint8_t *buf2, size_t len)
+static bool compareBuffers(const uint8_t *buf1, const uint8_t *buf2, const size_t len)
 {
     for (size_t i = 0; i < len; i++) {
         if (buf1[i] != buf2[i]) {
@@ -130,8 +129,7 @@ static bool compareBuffers(const uint8_t *buf1, const uint8_t *buf2, size_t len)
 void setup()
 {
     Serial.begin(9600);
-    while (!Serial)
-        ;  // Wait for serial port to connect (useful for native USB)
+    while (!Serial);  // Wait for serial port to connect (useful for native USB)
 
     Serial.println("===============================================================");
     Serial.println("================ TROPIC01 R Memory Example ====================");
@@ -170,13 +168,22 @@ void setup()
     }
     Serial.println("  OK");
 
+    Serial.println("---------------------------------------------------------------");
+    Serial.println();
+    Serial.println("---------------------------- Loop -----------------------------");
+}
+// -----------------------------------------------------------------------------------------------------
+
+// ------------------------------------------ Loop function --------------------------------------------
+void loop()
+{
     // Prepare string data.
     const char *testString = "Hello TROPIC01 R Memory!";
     uint16_t stringLen = strlen(testString);
     memcpy(writeBuffer, testString, stringLen);
 
     Serial.print("Writing string to slot ");
-    Serial.print(R_MEM_SLOT_STRING);
+    Serial.print(R_MEM_SLOT_FOR_STRING);
     Serial.println("...");
     Serial.print("  Data: \"");
     Serial.print(testString);
@@ -185,9 +192,9 @@ void setup()
     Serial.print(stringLen);
     Serial.println(" bytes");
 
-    returnVal = tropic01.rMemWrite(R_MEM_SLOT_STRING, writeBuffer, stringLen);
+    returnVal = tropic01.rMemWrite(R_MEM_SLOT_FOR_STRING, writeBuffer, stringLen);
     if (returnVal != LT_OK) {
-        Serial.print("  rMemWrite() failed, returnVal=");
+        Serial.print("  Tropic01.rMemWrite() failed, returnVal=");
         Serial.println(returnVal);
         errorHandler();
     }
@@ -196,13 +203,13 @@ void setup()
 
     // Read string data back.
     Serial.print("Reading string from slot ");
-    Serial.print(R_MEM_SLOT_STRING);
+    Serial.print(R_MEM_SLOT_FOR_STRING);
     Serial.println("...");
     memset(readBuffer, 0, sizeof(readBuffer));
 
-    returnVal = tropic01.rMemRead(R_MEM_SLOT_STRING, readBuffer, sizeof(readBuffer), &bytesRead);
+    returnVal = tropic01.rMemRead(R_MEM_SLOT_FOR_STRING, readBuffer, sizeof(readBuffer), bytesRead);
     if (returnVal != LT_OK) {
-        Serial.print("  rMemRead() failed, returnVal=");
+        Serial.print("  Tropic01.rMemRead() failed, returnVal=");
         Serial.println(returnVal);
         errorHandler();
     }
@@ -225,23 +232,20 @@ void setup()
 
     // Erase string data.
     Serial.print("Erasing slot ");
-    Serial.print(R_MEM_SLOT_STRING);
+    Serial.print(R_MEM_SLOT_FOR_STRING);
     Serial.println("...");
-    returnVal = tropic01.rMemErase(R_MEM_SLOT_STRING);
+    returnVal = tropic01.rMemErase(R_MEM_SLOT_FOR_STRING);
     if (returnVal != LT_OK) {
-        Serial.print("  rMemErase() failed, returnVal=");
+        Serial.print("  Tropic01.rMemErase() failed, returnVal=");
         Serial.println(returnVal);
         errorHandler();
     }
     Serial.println("  OK - Slot erased successfully");
-    Serial.println("---------------------------------------------------------------");
-}
-// -----------------------------------------------------------------------------------------------------
 
-// ------------------------------------------ Loop function --------------------------------------------
-void loop()
-{
-    // Everything is done in setup, so just do nothing in loop.
-    delay(1000);
+    Serial.println();
+    Serial.println("Entering an idle loop");
+    Serial.println("---------------------------------------------------------------");
+
+    while (true);  // Do nothing, end of example.
 }
 // -----------------------------------------------------------------------------------------------------
