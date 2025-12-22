@@ -170,9 +170,6 @@ void setup()
     }
     Serial.println("  OK");
 
-    Serial.println("---------------------------------------------------------------");
-    Serial.println();
-
     // Prepare string data.
     const char *testString = "Hello TROPIC01 R Memory!";
     uint16_t stringLen = strlen(testString);
