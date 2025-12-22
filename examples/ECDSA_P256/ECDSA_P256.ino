@@ -121,7 +121,7 @@ static void printHex(const char *label, const uint8_t *data, size_t len)
 }
 
 // Verify ECDSA signature using MbedTLS PSA Crypto.
-static bool verifyECDSA(const uint8_t *pubKey, const uint8_t *message, size_t messageLen, const uint8_t *signature)
+static bool verifyECDSA(const uint8_t *pubKey, const uint8_t *message, const size_t messageLen, const uint8_t *signature)
 {
     psa_key_attributes_t attributes = PSA_KEY_ATTRIBUTES_INIT;
     psa_key_id_t keyId = 0;
