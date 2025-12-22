@@ -76,7 +76,7 @@ lt_ret_t Tropic01::eccKeyGenerate(const lt_ecc_slot_t slot, const lt_ecc_curve_t
     return lt_ecc_key_generate(&this->handle, slot, curve);
 }
 
-lt_ret_t Tropic01::eccKeyStore(const lt_ecc_slot_t slot, const lt_ecc_curve_type_t curve, const uint8_t *key)
+lt_ret_t Tropic01::eccKeyStore(const lt_ecc_slot_t slot, const lt_ecc_curve_type_t curve, const uint8_t key[])
 {
     return lt_ecc_key_store(&this->handle, slot, curve, key);
 }

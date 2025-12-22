@@ -133,7 +133,7 @@ class Tropic01 {
      * @retval           other Method did not execute successully, you might use lt_ret_verbose() to get verbose
      * encoding of returned value
      */
-    lt_ret_t eccKeyStore(const lt_ecc_slot_t slot, const lt_ecc_curve_type_t curve, const uint8_t *key);
+    lt_ret_t eccKeyStore(const lt_ecc_slot_t slot, const lt_ecc_curve_type_t curve, const uint8_t key[]);
 
     /**
      * @brief Reads ECC public key corresponding to a private key in the specified ECC key slot.
