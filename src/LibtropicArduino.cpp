@@ -70,3 +70,16 @@ lt_ret_t Tropic01::ping(const char msgOut[], char msgIn[], const uint16_t msgLen
 {
     return lt_ping(&this->handle, (uint8_t *)msgOut, (uint8_t *)msgIn, msgLen);
 }
+
+lt_ret_t Tropic01::rMemWrite(const uint16_t udataSlot, const uint8_t data[], const uint16_t dataSize)
+{
+    return lt_r_mem_data_write(&this->handle, udataSlot, data, dataSize);
+}
+
+lt_ret_t Tropic01::rMemRead(const uint16_t udataSlot, uint8_t data[], const uint16_t dataMaxSize,
+                            uint16_t &dataReadSize)
+{
+    return lt_r_mem_data_read(&this->handle, udataSlot, data, dataMaxSize, &dataReadSize);
+}
+
+lt_ret_t Tropic01::rMemErase(const uint16_t udataSlot) { return lt_r_mem_data_erase(&this->handle, udataSlot); }
