@@ -162,7 +162,8 @@ bool verifyECDSA(const uint8_t *pubKey, const uint8_t *message, size_t messageLe
                              TR01_ECDSA_EDDSA_SIGNATURE_LENGTH);
     if (status == PSA_SUCCESS) {
         result = true;
-    } else {
+    }
+    else {
         Serial.print("  ECDSA verification failed, status=");
         Serial.println(status);
     }
@@ -274,7 +275,8 @@ void setup()
     Serial.println("Verifying P-256 signature on host...");
     if (verifyECDSA(p256PubKey, (const uint8_t *)message, messageLen, p256Signature)) {
         Serial.println("  ✓ P-256 signature verification PASSED!");
-    } else {
+    }
+    else {
         Serial.println("  ✗ P-256 signature verification FAILED!");
     }
     Serial.println();

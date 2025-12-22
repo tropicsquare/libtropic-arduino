@@ -148,8 +148,8 @@ class Tropic01 {
      * @retval                  other Method did not execute successully, you might use lt_ret_verbose() to get verbose
      * encoding of returned value
      */
-    lt_ret_t eccKeyRead(const lt_ecc_slot_t slot, uint8_t *key, const uint8_t key_max_size,
-                        lt_ecc_curve_type_t *curve, lt_ecc_key_origin_t *origin);
+    lt_ret_t eccKeyRead(const lt_ecc_slot_t slot, uint8_t *key, const uint8_t key_max_size, lt_ecc_curve_type_t *curve,
+                        lt_ecc_key_origin_t *origin);
 
     /**
      * @brief Erases ECC key from the specified ECC key slot.
