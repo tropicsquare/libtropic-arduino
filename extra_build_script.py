@@ -69,7 +69,8 @@ cmake_args = [
     "-S", str(external_root),
     "-B", str(libtropic_build_dir),
     f"-DCMAKE_C_FLAGS={c_flags}",
-    f"-DCMAKE_CXX_FLAGS={cxx_flags}"
+    f"-DCMAKE_CXX_FLAGS={cxx_flags}",
+    "-DCMAKE_SYSTEM_NAME=Generic"
 ]
 
 # Add linker flags only if not on macOS (nosys.specs is specific to ARM GCC)
