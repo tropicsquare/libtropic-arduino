@@ -230,6 +230,22 @@ class Tropic01 {
      */
     lt_ret_t rMemErase(const uint16_t udataSlot);
 
+    /**
+     * @brief Executes the MAC-and-Destroy sequence.
+     * @details This method is part of the MAC-and-Destroy PIN verification engine.
+     *          For complete implementation examples, see the mac_and_destroy example.
+     *          For more information, refer to the TROPIC01 Application Note on PIN verification.
+     *
+     * @param slot[in]      MAC-and-Destroy slot index (TR01_MAC_AND_DESTROY_SLOT_0 - TR01_MAC_AND_DESTROY_SLOT_127)
+     * @param dataOut[in]   Data to be sent from host to TROPIC01 (32 bytes)
+     * @param dataIn[out]   Data returned from TROPIC01 to host (32 bytes)
+     *
+     * @retval              LT_OK Method executed successfully
+     * @retval              other Method did not execute successfully, you might use lt_ret_verbose() to get verbose
+     * encoding of returned value
+     */
+    lt_ret_t macAndDestroy(const lt_mac_and_destroy_slot_t slot, const uint8_t dataOut[], uint8_t dataIn[]);
+
    private:
     lt_dev_arduino_t device;
     lt_ctx_mbedtls_v4_t cryptoCtx;
