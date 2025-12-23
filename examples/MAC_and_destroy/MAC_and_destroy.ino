@@ -67,7 +67,7 @@
 #define PIN_SIZE_MAX 8
 
 // Generate random master secret. When used in production, make sure you generate
-// masterSecret with a secure random generator.
+// myMasterSecret with a secure random generator.
 #define MY_MASTER_SECRET_SIZE 32u
 
 uint8_t myMasterSecret[MY_MASTER_SECRET_SIZE]
