@@ -8,6 +8,17 @@ This library provides support for using the TROPIC01 secure element in the Ardui
 * `secureSessionStart`
 * `secureSessionEnd`
 * `ping`
+* `eccKeyGenerate`
+* `eccKeyStore`
+* `eccKeyRead`
+* `eccKeyErase`
+* `ecdsaSign`
+* `eddsaSign`
+* `rMemWrite`
+* `rMemRead`
+* `rMemErase`
+* `macAndDestroy`
+
 
 ## Using LibtropicArduino Inside PlatformIO
 
