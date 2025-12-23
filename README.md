@@ -17,6 +17,7 @@ This library provides support for using the TROPIC01 secure element in the Ardui
 * `rMemWrite`
 * `rMemRead`
 * `rMemErase`
+* `macAndDestroy`
 
 
 ## Using LibtropicArduino Inside PlatformIO

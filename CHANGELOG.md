@@ -8,8 +8,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
-- API: `eccKeyGenerate`, `eccKeyStore`, `eccKeyRead`, `eccKeyErase`, `ecdsaSign`, `eddsaSign`, `rMemWrite`, `rMemRead`, `rMemErase`
-- Examples: ECDSA_P256, EdDSA_Ed25519, R-Memory
+- API: `eccKeyGenerate`, `eccKeyStore`, `eccKeyRead`, `eccKeyErase`, `ecdsaSign`, `eddsaSign`, `rMemWrite`, `rMemRead`, `rMemErase`, `macAndDestroy`
+- Examples: ECDSA_P256, EdDSA_Ed25519, R-Memory, MAC_and_destroy
 
 ### Changed
 - Use camelCase for method parameters.

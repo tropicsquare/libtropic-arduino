@@ -112,3 +112,7 @@ lt_ret_t Tropic01::rMemRead(const uint16_t udataSlot, uint8_t data[], const uint
 
 lt_ret_t Tropic01::rMemErase(const uint16_t udataSlot) { return lt_r_mem_data_erase(&this->handle, udataSlot); }
 
+lt_ret_t Tropic01::macAndDestroy(const lt_mac_and_destroy_slot_t slot, const uint8_t dataOut[], uint8_t dataIn[])
+{
+    return lt_mac_and_destroy(&this->handle, slot, dataOut, dataIn);
+}
