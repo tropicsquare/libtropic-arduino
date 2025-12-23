@@ -235,7 +235,7 @@ void loop()
     Serial.println("  OK");
 
     Serial.println();
-    Serial.println("Entering an idle loop");
+    Serial.println("Success, entering an idle loop.");
     Serial.println("---------------------------------------------------------------");
 
     while (true);  // Do nothing, end of example.
