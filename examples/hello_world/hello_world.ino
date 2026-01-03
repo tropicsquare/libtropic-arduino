@@ -105,7 +105,14 @@ void errorHandler(void)
 // ------------------------------------------ Setup function -------------------------------------------
 void setup()
 {
+    // Initialize SPI (using the default SPI instance defined in <SPI.h>).
+    // If you want to use non-default SPI instance, don't forget to pass it to the
+    // Tropic01() constructor (otherwise it will use the default SPI instance).
+    SPI.begin();
+
     Serial.begin(9600);
+    while (!Serial);  // Wait for serial port to connect (useful for native USB).
+
     Serial.println("===============================================================");
     Serial.println("================ TROPIC01 Hello World Example =================");
     Serial.println("===============================================================");
