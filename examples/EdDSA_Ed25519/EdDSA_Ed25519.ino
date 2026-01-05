@@ -135,7 +135,7 @@ void setup()
     SPI.begin();
 
     Serial.begin(9600);
-    while (!Serial);  // Wait for serial port to connect (useful for native USB).
+    while (!Serial);  // Wait for serial port to connect.
 
     Serial.println("===============================================================");
     Serial.println("========== TROPIC01 EdDSA Ed25519 Sign & Verify ===============");
