@@ -90,6 +90,16 @@ psa_status_t mbedtlsInitStatus;
 // -----------------------------------------------------------------------------------------------------
 
 // ---------------------------------------- Utility functions ------------------------------------------
+// Helper function to save some source code lines when printing Libtropic errors using Serial.
+static void printLibtropicError(const char prefixMsg[], const lt_ret_t ret)
+{
+    Serial.print(prefixMsg);
+    Serial.print(ret);
+    Serial.print(" (");
+    Serial.print(lt_ret_verbose(ret));
+    Serial.println(")");
+}
+
 // Used when some error occurs.
 void errorHandler(void)
 {
@@ -133,10 +143,8 @@ void setup()
     // Init Tropic01 resources.
     Serial.println("Initializing Tropic01 resources...");
     returnVal = tropic01.begin();
-
     if (returnVal != LT_OK) {
-        Serial.print("Tropic01.begin() failed, returnVal=");
-        Serial.println(returnVal);
+        printLibtropicError("  Tropic01.begin() failed, returnVal=", returnVal);
         errorHandler();
     }
     Serial.println("  OK");
@@ -145,8 +153,7 @@ void setup()
     Serial.println("Starting Secure Channel Session with TROPIC01...");
     returnVal = tropic01.secureSessionStart(PAIRING_KEY_PRIV, PAIRING_KEY_PUB, PAIRING_KEY_SLOT);
     if (returnVal != LT_OK) {
-        Serial.print("Tropic01.secureSessionStart() failed, returnVal=");
-        Serial.println(returnVal);
+        printLibtropicError("  Tropic01.secureSessionStart() failed, returnVal=", returnVal);
         errorHandler();
     }
     Serial.println("  OK");
@@ -169,8 +176,7 @@ void loop()
     // Ping TROPIC01 with our message.
     returnVal = tropic01.ping(pingMsgToSend, pingMsgToReceive, sizeof(pingMsgToSend));
     if (returnVal != LT_OK) {
-        Serial.print("Tropic01.ping() failed, returnVal=");
-        Serial.println(returnVal);
+        printLibtropicError("  Tropic01.ping() failed, returnVal=", returnVal);
         errorHandler();
     }
     Serial.println("  OK");

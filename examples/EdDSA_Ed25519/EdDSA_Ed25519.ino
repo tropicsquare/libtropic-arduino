@@ -92,6 +92,16 @@ psa_status_t psaStatus;
 // -----------------------------------------------------------------------------------------------------
 
 // ---------------------------------------- Static local functions ------------------------------------------
+// Helper function to save some source code lines when printing Libtropic errors using Serial.
+static void printLibtropicError(const char prefixMsg[], const lt_ret_t ret)
+{
+    Serial.print(prefixMsg);
+    Serial.print(ret);
+    Serial.print(" (");
+    Serial.print(lt_ret_verbose(ret));
+    Serial.println(")");
+}
+
 // Used when some error occurs.
 static void errorHandler(void)
 {
@@ -158,8 +168,7 @@ void setup()
     Serial.println("Initializing Tropic01 resources...");
     returnVal = tropic01.begin();
     if (returnVal != LT_OK) {
-        Serial.print("  Tropic01.begin() failed, returnVal=");
-        Serial.println(returnVal);
+        printLibtropicError("  Tropic01.begin() failed, returnVal=", returnVal);
         errorHandler();
     }
     Serial.println("  OK");
@@ -168,8 +177,7 @@ void setup()
     Serial.println("Starting Secure Channel Session with TROPIC01...");
     returnVal = tropic01.secureSessionStart(PAIRING_KEY_PRIV, PAIRING_KEY_PUB, PAIRING_KEY_SLOT);
     if (returnVal != LT_OK) {
-        Serial.print("  Tropic01.secureSessionStart() failed, returnVal=");
-        Serial.println(returnVal);
+        printLibtropicError("  Tropic01.secureSessionStart() failed, returnVal=", returnVal);
         errorHandler();
     }
     Serial.println("  OK");
@@ -187,8 +195,7 @@ void loop()
     Serial.println("Generating Ed25519 key in slot 1...");
     returnVal = tropic01.eccKeyGenerate(ECC_SLOT_ED25519, TR01_CURVE_ED25519);
     if (returnVal != LT_OK) {
-        Serial.print("  eccKeyGenerate() failed, returnVal=");
-        Serial.println(returnVal);
+        printLibtropicError("  Tropic01.eccKeyGenerate() failed, returnVal=", returnVal);
         errorHandler();
     }
     Serial.println("  OK");
@@ -197,8 +204,7 @@ void loop()
     Serial.println("Reading Ed25519 public key from slot 1...");
     returnVal = tropic01.eccKeyRead(ECC_SLOT_ED25519, ed25519PubKey, sizeof(ed25519PubKey), curveType, keyOrigin);
     if (returnVal != LT_OK) {
-        Serial.print("  eccKeyRead() failed, returnVal=");
-        Serial.println(returnVal);
+        printLibtropicError("  Tropic01.eccKeyRead() failed, returnVal=", returnVal);
         errorHandler();
     }
     Serial.print("  Curve type: ");
@@ -221,8 +227,7 @@ void loop()
     Serial.println("Signing message with Ed25519 key (EdDSA)...");
     returnVal = tropic01.eddsaSign(ECC_SLOT_ED25519, (const uint8_t *)message, messageLen, ed25519Signature);
     if (returnVal != LT_OK) {
-        Serial.print("  eddsaSign() failed, returnVal=");
-        Serial.println(returnVal);
+        printLibtropicError("  Tropic01.eddsaSign() failed, returnVal=", returnVal);
         errorHandler();
     }
     printHex("  Signature", ed25519Signature, sizeof(ed25519Signature));
@@ -233,8 +238,7 @@ void loop()
     Serial.println("Erasing Ed25519 key from slot 1...");
     returnVal = tropic01.eccKeyErase(ECC_SLOT_ED25519);
     if (returnVal != LT_OK) {
-        Serial.print("  eccKeyErase() failed, returnVal=");
-        Serial.println(returnVal);
+        printLibtropicError("  Tropic01.eccKeyErase() failed, returnVal=", returnVal);
         errorHandler();
     }
     Serial.println("  OK");

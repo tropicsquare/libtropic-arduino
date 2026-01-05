@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 - Examples: Call `SPI.begin`, because `SPI.begin` and `SPI.end` are no longer called by the Arduino HAL (see [here](https://github.com/tropicsquare/libtropic/pull/401) for more information). It is now expected that users initialize SPI in their code themselves.
+- Examples: Enhanced error logging.
 
 ### Removed
 - `rngSeed` parameter from `Tropic01()` constructor - it is now user's responsibility to initialize the RNG if needed.

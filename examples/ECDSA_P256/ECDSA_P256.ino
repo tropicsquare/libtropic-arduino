@@ -92,6 +92,16 @@ psa_status_t psaStatus;
 // -----------------------------------------------------------------------------------------------------
 
 // ---------------------------------------- Static local functions ------------------------------------------
+// Helper function to save some source code lines when printing Libtropic errors using Serial.
+static void printLibtropicError(const char prefixMsg[], const lt_ret_t ret)
+{
+    Serial.print(prefixMsg);
+    Serial.print(ret);
+    Serial.print(" (");
+    Serial.print(lt_ret_verbose(ret));
+    Serial.println(")");
+}
+
 // Used when some error occurs.
 static void errorHandler(void)
 {
@@ -144,17 +154,17 @@ static bool verifyECDSA(const uint8_t *pubKey, const uint8_t *message, const siz
     // Import public key.
     status = psa_import_key(&attributes, uncompressedPubKey, sizeof(uncompressedPubKey), &keyId);
     if (status != PSA_SUCCESS) {
-        Serial.print("  Failed to import P-256 public key, status=");
+        Serial.print("  Failed to import P-256 public key, psa_status_t=");
         Serial.println(status);
-        goto cleanup;
+        goto verifyECDSACleanup;
     }
 
     // Hash the message with SHA-256.
     status = psa_hash_compute(PSA_ALG_SHA_256, message, messageLen, hash, sizeof(hash), &hashLen);
     if (status != PSA_SUCCESS) {
-        Serial.print("  Failed to hash message, status=");
+        Serial.print("  Failed to hash message, psa_status_t=");
         Serial.println(status);
-        goto cleanup;
+        goto verifyECDSACleanup;
     }
 
     // Verify signature.
@@ -164,11 +174,11 @@ static bool verifyECDSA(const uint8_t *pubKey, const uint8_t *message, const siz
         result = true;
     }
     else {
-        Serial.print("  ECDSA verification failed, status=");
+        Serial.print("  ECDSA verification failed, psa_status_t=");
         Serial.println(status);
     }
 
-cleanup:
+verifyECDSACleanup:
     if (keyId != 0) {
         psa_destroy_key(keyId);
     }
@@ -209,8 +219,7 @@ void setup()
     Serial.println("Initializing Tropic01 resources...");
     returnVal = tropic01.begin();
     if (returnVal != LT_OK) {
-        Serial.print("  Tropic01.begin() failed, returnVal=");
-        Serial.println(returnVal);
+        printLibtropicError("  Tropic01.begin() failed, returnVal=", returnVal);
         errorHandler();
     }
     Serial.println("  OK");
@@ -219,8 +228,7 @@ void setup()
     Serial.println("Starting Secure Channel Session with TROPIC01...");
     returnVal = tropic01.secureSessionStart(PAIRING_KEY_PRIV, PAIRING_KEY_PUB, PAIRING_KEY_SLOT);
     if (returnVal != LT_OK) {
-        Serial.print("  Tropic01.secureSessionStart() failed, returnVal=");
-        Serial.println(returnVal);
+        printLibtropicError("  Tropic01.secureSessionStart() failed, returnVal=", returnVal);
         errorHandler();
     }
     Serial.println("  OK");
@@ -238,8 +246,7 @@ void loop()
     Serial.println("Generating P-256 key in slot 1...");
     returnVal = tropic01.eccKeyGenerate(ECC_SLOT_P256, TR01_CURVE_P256);
     if (returnVal != LT_OK) {
-        Serial.print("  Tropic01.eccKeyGenerate() failed, returnVal=");
-        Serial.println(returnVal);
+        printLibtropicError("  Tropic01.eccKeyGenerate() failed, returnVal=", returnVal);
         errorHandler();
     }
     Serial.println("  OK");
@@ -248,8 +255,7 @@ void loop()
     Serial.println("Reading P-256 public key from slot 1...");
     returnVal = tropic01.eccKeyRead(ECC_SLOT_P256, p256PubKey, sizeof(p256PubKey), curveType, keyOrigin);
     if (returnVal != LT_OK) {
-        Serial.print("  Tropic01.eccKeyRead() failed, returnVal=");
-        Serial.println(returnVal);
+        printLibtropicError("  Tropic01.eccKeyRead() failed, returnVal=", returnVal);
         errorHandler();
     }
     Serial.print("  Curve type: ");
@@ -272,8 +278,7 @@ void loop()
     Serial.println("Signing message with P-256 key (ECDSA with SHA-256)...");
     returnVal = tropic01.ecdsaSign(ECC_SLOT_P256, (const uint8_t *)message, messageLen, p256Signature);
     if (returnVal != LT_OK) {
-        Serial.print("  ecdsaSign() failed, returnVal=");
-        Serial.println(returnVal);
+        printLibtropicError("  Tropic01.ecdsaSign() failed, returnVal=", returnVal);
         errorHandler();
     }
     printHex("  Signature", p256Signature, sizeof(p256Signature));
@@ -292,8 +297,7 @@ void loop()
     Serial.println("Erasing P-256 key from slot 1...");
     returnVal = tropic01.eccKeyErase(ECC_SLOT_P256);
     if (returnVal != LT_OK) {
-        Serial.print("  eccKeyErase() failed, returnVal=");
-        Serial.println(returnVal);
+        printLibtropicError("  Tropic01.eccKeyErase() failed, returnVal=", returnVal);
         errorHandler();
     }
     Serial.println("  OK");
