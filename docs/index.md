@@ -34,7 +34,7 @@ Repeat the steps 1, 2, 3 from [Using LibtropicArduino Inside PlatformIO](../READ
                 // Your error handling.
             }
             ```
-        2. Initialize SPI - for example, the default `SPI` instance from `SPI.h`:
+        2. Initialize SPI. For example, the default `SPI` instance from `SPI.h`:
             ```cpp
             SPI.begin();
             ```
