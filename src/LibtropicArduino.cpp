@@ -18,7 +18,7 @@ Tropic01::Tropic01(const uint16_t spiCSPin
                    uint8_t l3Buff[], const uint16_t l3BuffLen
 #endif
                    ,
-                   const unsigned int rngSeed, SPIClass &spi, SPISettings spiSettings)
+                   SPIClass &spi, SPISettings spiSettings)
 {
     // Initialize device structure
     this->device.spi_cs_pin = spiCSPin;
@@ -26,7 +26,6 @@ Tropic01::Tropic01(const uint16_t spiCSPin
     this->device.int_gpio_pin = intGpioPin;
 #endif
     this->device.spi_settings = spiSettings;
-    this->device.rng_seed = rngSeed;
     this->device.spi = &spi;
     // Pass device structure to handle
     this->handle.l2.device = &this->device;

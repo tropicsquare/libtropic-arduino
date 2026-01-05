@@ -547,8 +547,13 @@ static lt_ret_t pinVerify(const uint8_t *pin, const uint8_t pinSize, uint8_t *fi
 // ------------------------------------------ Setup function -------------------------------------------
 void setup()
 {
+    // Initialize SPI (using the default SPI instance defined in <SPI.h>).
+    // If you want to use non-default SPI instance, don't forget to pass it to the
+    // Tropic01() constructor (otherwise it will use the default SPI instance).
+    SPI.begin();
+
     Serial.begin(9600);
-    while (!Serial);  // Wait for serial port to connect (useful for native USB)
+    while (!Serial);  // Wait for serial port to connect.
 
     Serial.println("===============================================================");
     Serial.println("========== TROPIC01 MAC-and-Destroy PIN Verification ==========");

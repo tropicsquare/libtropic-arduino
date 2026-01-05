@@ -73,6 +73,7 @@ This library provides support for using the TROPIC01 secure element in the Ardui
 
 
 ## Repository structure
+- `docs/`: More detailed information.
 - `examples/`: Basic examples, showing how to use the Arduino C++ wrapper for Libtropic.
 - `libtropic/`: Libtropic SDK as a submodule.
 - `src/`: Implementation of the Arduino C++ wrapper for Libtropic.

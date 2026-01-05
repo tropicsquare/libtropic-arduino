@@ -34,21 +34,24 @@ Repeat the steps 1, 2, 3 from [Using LibtropicArduino Inside PlatformIO](../READ
                 // Your error handling.
             }
             ```
-        2. Initialize `Serial` (needed only if you configured logging using the [LT_LOG_LVL](https://tropicsquare.github.io/libtropic/latest/get_started/integrating_libtropic/how_to_configure/) CMake option, as the Libtropic Arduino HAL uses `Serial` for logging):
+        2. Initialize SPI. For example, the default `SPI` instance from `SPI.h`:
+            ```cpp
+            SPI.begin();
+            ```
+        3. Initialize `Serial` (needed only if you configured logging using the [LT_LOG_LVL](https://tropicsquare.github.io/libtropic/latest/get_started/integrating_libtropic/how_to_configure/) CMake option, as the Libtropic Arduino HAL uses `Serial` for logging):
             ```cpp
             Serial.begin(your_baudrate);
             ```
-        3. Initialize `my_device`:
+        4. Initialize `my_device`:
             ```cpp
             my_device.spi_cs_pin = <YOUR_VALUE>; // Platform's pin number where TROPIC01's SPI Chip Select pin is connected.
             #if LT_USE_INT_PIN
             my_device.int_gpio_pin = <YOUR_VALUE>; // Platform's pin number where TROPIC01's interrupt pin is connected. Is necessary only when -DLT_USE_INT_PIN=1 was set in build_flags.
             #endif
             my_device.spi_settings = SPISettings(10000000, MSBFIRST, SPI_MODE0); // Frequency can be changed.
-            my_device.rng_seed = <YOUR_VALUE>; // Libtropic uses RNG for generating Host's ephemeral keys.
-            my_device.spi = ::SPI; // Using default SPI instance, but can be changed.
+            my_device.spi = ::SPI; // Using the SPI instance from step 2.
             ```
-        4. Initialize `my_handle`:
+        5. Initialize `my_handle`:
             ```cpp
             my_handle.l2.device = &my_device;
             my_handle.l3.crypto_ctx = &my_crypto_ctx;
@@ -57,7 +60,7 @@ Repeat the steps 1, 2, 3 from [Using LibtropicArduino Inside PlatformIO](../READ
             my_handle.l3.buff_len = sizeof(my_l3_buffer);
             #endif
             ```
-        5. Initialize Libtropic:
+        6. Initialize Libtropic:
             ```cpp
             lt_ret_t ret_init = lt_init(&my_handle);
             if (ret_init != LT_OK) {
