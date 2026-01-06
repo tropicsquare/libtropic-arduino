@@ -84,6 +84,8 @@ uint8_t ed25519Signature[TR01_ECDSA_EDDSA_SIGNATURE_LENGTH];
 // Variables for key info.
 lt_ecc_curve_type_t curveType;
 lt_ecc_key_origin_t keyOrigin;
+
+bool callTropic01End = false;  // Whether to call Tropic01.end() in cleanup function.
 // -----------------------------------------------------------------------------------------------------
 
 // ------------------------------------------ Other variables ------------------------------------------
@@ -102,14 +104,15 @@ static void printLibtropicError(const char prefixMsg[], const lt_ret_t ret)
     Serial.println(")");
 }
 
-// Used when some error occurs.
-static void errorHandler(void)
+static void cleanResourcesAndLoopForever(void)
 {
-    Serial.println("Starting cleanup...");
-    tropic01.end();             // Aborts all communication with TROPIC01 and frees resources.
+    if (callTropic01End) {
+        // end() should be called only if begin() was called successfully.
+        tropic01.end();  // Aborts all communication with TROPIC01 and frees resources.
+    }
     mbedtls_psa_crypto_free();  // Frees MbedTLS's PSA Crypto resources.
+    SPI.end();                  // Deinitialize SPI.
 
-    Serial.println("Cleanup finished, entering infinite loop...");
     while (true);
 }
 
@@ -160,7 +163,7 @@ void setup()
     if (psaStatus != PSA_SUCCESS) {
         Serial.print("  MbedTLS's PSA Crypto initialization failed, psa_status_t=");
         Serial.println(psaStatus);
-        errorHandler();
+        cleanResourcesAndLoopForever();
     }
     Serial.println("  OK");
 
@@ -169,16 +172,17 @@ void setup()
     returnVal = tropic01.begin();
     if (returnVal != LT_OK) {
         printLibtropicError("  Tropic01.begin() failed, returnVal=", returnVal);
-        errorHandler();
+        cleanResourcesAndLoopForever();
     }
     Serial.println("  OK");
+    callTropic01End = true;
 
     // Start Secure Channel Session with TROPIC01.
     Serial.println("Starting Secure Channel Session with TROPIC01...");
     returnVal = tropic01.secureSessionStart(PAIRING_KEY_PRIV, PAIRING_KEY_PUB, PAIRING_KEY_SLOT);
     if (returnVal != LT_OK) {
         printLibtropicError("  Tropic01.secureSessionStart() failed, returnVal=", returnVal);
-        errorHandler();
+        cleanResourcesAndLoopForever();
     }
     Serial.println("  OK");
 
@@ -196,7 +200,7 @@ void loop()
     returnVal = tropic01.eccKeyGenerate(ECC_SLOT_ED25519, TR01_CURVE_ED25519);
     if (returnVal != LT_OK) {
         printLibtropicError("  Tropic01.eccKeyGenerate() failed, returnVal=", returnVal);
-        errorHandler();
+        cleanResourcesAndLoopForever();
     }
     Serial.println("  OK");
 
@@ -205,7 +209,10 @@ void loop()
     returnVal = tropic01.eccKeyRead(ECC_SLOT_ED25519, ed25519PubKey, sizeof(ed25519PubKey), curveType, keyOrigin);
     if (returnVal != LT_OK) {
         printLibtropicError("  Tropic01.eccKeyRead() failed, returnVal=", returnVal);
-        errorHandler();
+        if (tropic01.eccKeyErase(ECC_SLOT_ED25519) != LT_OK) {
+            Serial.println("  Additionally, failed to erase Ed25519 key from slot 1!");
+        }
+        cleanResourcesAndLoopForever();
     }
     Serial.print("  Curve type: ");
     Serial.println(curveType == TR01_CURVE_ED25519 ? "Ed25519" : "Unknown");
@@ -228,7 +235,10 @@ void loop()
     returnVal = tropic01.eddsaSign(ECC_SLOT_ED25519, (const uint8_t *)message, messageLen, ed25519Signature);
     if (returnVal != LT_OK) {
         printLibtropicError("  Tropic01.eddsaSign() failed, returnVal=", returnVal);
-        errorHandler();
+        if (tropic01.eccKeyErase(ECC_SLOT_ED25519) != LT_OK) {
+            Serial.println("  Additionally, failed to erase Ed25519 key from slot 1!");
+        }
+        cleanResourcesAndLoopForever();
     }
     printHex("  Signature", ed25519Signature, sizeof(ed25519Signature));
 
@@ -239,14 +249,13 @@ void loop()
     returnVal = tropic01.eccKeyErase(ECC_SLOT_ED25519);
     if (returnVal != LT_OK) {
         printLibtropicError("  Tropic01.eccKeyErase() failed, returnVal=", returnVal);
-        errorHandler();
+        cleanResourcesAndLoopForever();
     }
     Serial.println("  OK");
 
     Serial.println();
     Serial.println("Success, entering an idle loop.");
     Serial.println("---------------------------------------------------------------");
-
-    while (true);  // Do nothing, end of example.
+    cleanResourcesAndLoopForever();
 }
 // -----------------------------------------------------------------------------------------------------

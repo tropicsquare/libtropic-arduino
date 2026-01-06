@@ -77,6 +77,8 @@ lt_ret_t returnVal;  // Used for return values of Tropic01's methods.
 uint8_t writeBuffer[256];
 uint8_t readBuffer[256];
 uint16_t bytesRead;
+
+bool callTropic01End = false;  // Whether to call Tropic01.end() in cleanup function.
 // -----------------------------------------------------------------------------------------------------
 
 // ------------------------------------------ Other variables ------------------------------------------
@@ -95,14 +97,15 @@ static void printLibtropicError(const char prefixMsg[], const lt_ret_t ret)
     Serial.println(")");
 }
 
-// Used when some error occurs.
-static void errorHandler(void)
+static void cleanResourcesAndLoopForever(void)
 {
-    Serial.println("Starting cleanup...");
-    tropic01.end();             // Aborts all communication with TROPIC01 and frees resources.
+    if (callTropic01End) {
+        // end() should be called only if begin() was called successfully.
+        tropic01.end();  // Aborts all communication with TROPIC01 and frees resources.
+    }
     mbedtls_psa_crypto_free();  // Frees MbedTLS's PSA Crypto resources.
+    SPI.end();                  // Deinitialize SPI.
 
-    Serial.println("Cleanup finished, entering infinite loop...");
     while (true);
 }
 
@@ -159,7 +162,7 @@ void setup()
     if (psaStatus != PSA_SUCCESS) {
         Serial.print("  MbedTLS's PSA Crypto initialization failed, psa_status_t=");
         Serial.println(psaStatus);
-        errorHandler();
+        cleanResourcesAndLoopForever();
     }
     Serial.println("  OK");
 
@@ -168,16 +171,17 @@ void setup()
     returnVal = tropic01.begin();
     if (returnVal != LT_OK) {
         printLibtropicError("  Tropic01.begin() failed, returnVal=", returnVal);
-        errorHandler();
+        cleanResourcesAndLoopForever();
     }
     Serial.println("  OK");
+    callTropic01End = true;
 
     // Start Secure Channel Session with TROPIC01.
     Serial.println("Starting Secure Channel Session with TROPIC01...");
     returnVal = tropic01.secureSessionStart(PAIRING_KEY_PRIV, PAIRING_KEY_PUB, PAIRING_KEY_SLOT);
     if (returnVal != LT_OK) {
         printLibtropicError("  Tropic01.secureSessionStart() failed, returnVal=", returnVal);
-        errorHandler();
+        cleanResourcesAndLoopForever();
     }
     Serial.println("  OK");
 
@@ -202,7 +206,7 @@ void loop()
     returnVal = tropic01.rMemErase(R_MEM_SLOT_FOR_STRING);
     if (returnVal != LT_OK) {
         printLibtropicError("  Tropic01.rMemErase() failed, returnVal=", returnVal);
-        errorHandler();
+        cleanResourcesAndLoopForever();
     }
     Serial.println("  OK - Slot erased successfully");
     Serial.println();
@@ -220,7 +224,7 @@ void loop()
     returnVal = tropic01.rMemWrite(R_MEM_SLOT_FOR_STRING, writeBuffer, stringLen);
     if (returnVal != LT_OK) {
         printLibtropicError("  Tropic01.rMemWrite() failed, returnVal=", returnVal);
-        errorHandler();
+        cleanResourcesAndLoopForever();
     }
     Serial.println("  OK - Data written successfully");
     Serial.println();
@@ -234,7 +238,7 @@ void loop()
     returnVal = tropic01.rMemRead(R_MEM_SLOT_FOR_STRING, readBuffer, sizeof(readBuffer), bytesRead);
     if (returnVal != LT_OK) {
         printLibtropicError("  Tropic01.rMemRead() failed, returnVal=", returnVal);
-        errorHandler();
+        cleanResourcesAndLoopForever();
     }
     Serial.print("  Bytes read: ");
     Serial.println(bytesRead);
@@ -260,7 +264,7 @@ void loop()
     returnVal = tropic01.rMemErase(R_MEM_SLOT_FOR_STRING);
     if (returnVal != LT_OK) {
         printLibtropicError("  Tropic01.rMemErase() failed, returnVal=", returnVal);
-        errorHandler();
+        cleanResourcesAndLoopForever();
     }
     Serial.println("  OK - Slot erased successfully");
 

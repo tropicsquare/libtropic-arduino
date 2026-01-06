@@ -82,6 +82,7 @@ Tropic01 tropic01(TROPIC01_CS_PIN
 lt_ret_t returnVal;                            // Used for return values of Tropic01's methods.
 char pingMsgToSend[] = "Hello World!";         // Ping message we will send to TROPIC01 via the Secure Channel.
 char pingMsgToReceive[sizeof(pingMsgToSend)];  // Buffer for receiving the Ping message from TROPIC01.
+bool callTropic01End = false;                  // Whether to call Tropic01.end() in cleanup function.
 // -----------------------------------------------------------------------------------------------------
 
 // ------------------------------------------ Other variables ------------------------------------------
@@ -100,14 +101,15 @@ static void printLibtropicError(const char prefixMsg[], const lt_ret_t ret)
     Serial.println(")");
 }
 
-// Used when some error occurs.
-void errorHandler(void)
+static void cleanResourcesAndLoopForever(void)
 {
-    Serial.println("Starting cleanup...");
-    tropic01.end();             // Aborts all communication with TROPIC01 and frees resources.
+    if (callTropic01End) {
+        // end() should be called only if begin() was called successfully.
+        tropic01.end();  // Aborts all communication with TROPIC01 and frees resources.
+    }
     mbedtls_psa_crypto_free();  // Frees MbedTLS's PSA Crypto resources.
+    SPI.end();                  // Deinitialize SPI.
 
-    Serial.println("Cleanup finished, entering infinite loop...");
     while (true);
 }
 // -----------------------------------------------------------------------------------------------------
@@ -136,7 +138,7 @@ void setup()
     if (mbedtlsInitStatus != PSA_SUCCESS) {
         Serial.print("MbedTLS's PSA Crypto initialization failed, psa_status_t=");
         Serial.println(mbedtlsInitStatus);
-        errorHandler();
+        cleanResourcesAndLoopForever();
     }
     Serial.println("  OK");
 
@@ -145,16 +147,17 @@ void setup()
     returnVal = tropic01.begin();
     if (returnVal != LT_OK) {
         printLibtropicError("  Tropic01.begin() failed, returnVal=", returnVal);
-        errorHandler();
+        cleanResourcesAndLoopForever();
     }
     Serial.println("  OK");
+    callTropic01End = true;
 
     // Start Secure Channel Session with TROPIC01.
     Serial.println("Starting Secure Channel Session with TROPIC01...");
     returnVal = tropic01.secureSessionStart(PAIRING_KEY_PRIV, PAIRING_KEY_PUB, PAIRING_KEY_SLOT);
     if (returnVal != LT_OK) {
         printLibtropicError("  Tropic01.secureSessionStart() failed, returnVal=", returnVal);
-        errorHandler();
+        cleanResourcesAndLoopForever();
     }
     Serial.println("  OK");
 
@@ -177,7 +180,7 @@ void loop()
     returnVal = tropic01.ping(pingMsgToSend, pingMsgToReceive, sizeof(pingMsgToSend));
     if (returnVal != LT_OK) {
         printLibtropicError("  Tropic01.ping() failed, returnVal=", returnVal);
-        errorHandler();
+        cleanResourcesAndLoopForever();
     }
     Serial.println("  OK");
 
