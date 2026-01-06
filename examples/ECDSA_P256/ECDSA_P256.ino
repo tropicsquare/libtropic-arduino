@@ -246,8 +246,22 @@ void setup()
 // ------------------------------------------ Loop function --------------------------------------------
 void loop()
 {
-    // Generate P-256 key in slot 1.
-    Serial.println("Generating P-256 key in slot 1...");
+    Serial.print("Will use P-256 key slot #");
+    Serial.print(ECC_SLOT_P256);
+    Serial.println(" for the following ECDSA operations.");
+    Serial.println();
+
+    // Erase the slot before writing so the write does not fail if the slot was already written.
+    Serial.println("Erasing the P-256 slot...");
+    returnVal = tropic01.eccKeyErase(ECC_SLOT_P256);
+    if (returnVal != LT_OK) {
+        printLibtropicError("  Tropic01.eccKeyErase() failed, returnVal=", returnVal);
+        cleanResourcesAndLoopForever();
+    }
+    Serial.println("  OK");
+
+    // Generate P-256 key.
+    Serial.println("Generating P-256 key in the slot...");
     returnVal = tropic01.eccKeyGenerate(ECC_SLOT_P256, TR01_CURVE_P256);
     if (returnVal != LT_OK) {
         printLibtropicError("  Tropic01.eccKeyGenerate() failed, returnVal=", returnVal);
@@ -255,13 +269,14 @@ void loop()
     }
     Serial.println("  OK");
 
-    // Read P-256 public key from slot 1.
-    Serial.println("Reading P-256 public key from slot 1...");
+    // Read P-256 public key.
+    Serial.println("Reading P-256 public key from the slot...");
     returnVal = tropic01.eccKeyRead(ECC_SLOT_P256, p256PubKey, sizeof(p256PubKey), curveType, keyOrigin);
     if (returnVal != LT_OK) {
         printLibtropicError("  Tropic01.eccKeyRead() failed, returnVal=", returnVal);
-        if (tropic01.eccKeyErase(ECC_SLOT_P256) != LT_OK) {
-            Serial.println("  Additionally, failed to erase P-256 key from slot 1!");
+        returnVal = tropic01.eccKeyErase(ECC_SLOT_P256);
+        if (returnVal != LT_OK) {
+            printLibtropicError("  Additionally, failed to erase the P-256 key slot, returnVal=", returnVal);
         }
         cleanResourcesAndLoopForever();
     }
@@ -281,34 +296,36 @@ void loop()
     Serial.println(" bytes");
     Serial.println();
 
-    // Sign message with P-256 key.
+    // Sign message with the P-256 key.
     Serial.println("Signing message with P-256 key (ECDSA with SHA-256)...");
     returnVal = tropic01.ecdsaSign(ECC_SLOT_P256, (const uint8_t *)message, messageLen, p256Signature);
     if (returnVal != LT_OK) {
         printLibtropicError("  Tropic01.ecdsaSign() failed, returnVal=", returnVal);
-        if (tropic01.eccKeyErase(ECC_SLOT_P256) != LT_OK) {
-            Serial.println("  Additionally, failed to erase P-256 key from slot 1!");
+        returnVal = tropic01.eccKeyErase(ECC_SLOT_P256);
+        if (returnVal != LT_OK) {
+            printLibtropicError("  Additionally, failed to erase the P-256 key slot, returnVal=", returnVal);
         }
         cleanResourcesAndLoopForever();
     }
     printHex("  Signature", p256Signature, sizeof(p256Signature));
 
-    // Verify P-256 signature.
+    // Verify the P-256 signature.
     Serial.println("Verifying P-256 signature on host...");
     if (verifyECDSA(p256PubKey, (const uint8_t *)message, messageLen, p256Signature)) {
         Serial.println("  P-256 signature verification PASSED!");
     }
     else {
         Serial.println("  P-256 signature verification FAILED!");
-        if (tropic01.eccKeyErase(ECC_SLOT_P256) != LT_OK) {
-            Serial.println("  Additionally, failed to erase P-256 key from slot 1!");
+        returnVal = tropic01.eccKeyErase(ECC_SLOT_P256);
+        if (returnVal != LT_OK) {
+            printLibtropicError("  Additionally, failed to erase the P-256 key slot, returnVal=", returnVal);
         }
         cleanResourcesAndLoopForever();
     }
     Serial.println();
 
-    // Erase P-256 key from slot 1.
-    Serial.println("Erasing P-256 key from slot 1...");
+    // Erase the P-256 key.
+    Serial.println("Erasing P-256 key from the slot...");
     returnVal = tropic01.eccKeyErase(ECC_SLOT_P256);
     if (returnVal != LT_OK) {
         printLibtropicError("  Tropic01.eccKeyErase() failed, returnVal=", returnVal);

@@ -199,25 +199,26 @@ void loop()
     uint16_t stringLen = strlen(testString);
     memcpy(writeBuffer, testString, stringLen);
 
-    // Erase the slot before writing so the write does not fail if the slot was already written.
-    Serial.print("Erasing slot ");
+    Serial.println("Will use R Memory slot #");
     Serial.print(R_MEM_SLOT_FOR_STRING);
-    Serial.println("...");
+    Serial.println(" for the following R Memory operations.");
+    Serial.println();
+
+    // Erase the slot before writing so the write does not fail if the slot was already written.
+    Serial.println("Erasing the slot...");
     returnVal = tropic01.rMemErase(R_MEM_SLOT_FOR_STRING);
     if (returnVal != LT_OK) {
         printLibtropicError("  Tropic01.rMemErase() failed, returnVal=", returnVal);
         cleanResourcesAndLoopForever();
     }
-    Serial.println("  OK - Slot erased successfully");
+    Serial.println("  OK");
     Serial.println();
 
-    Serial.print("Writing string to slot ");
-    Serial.print(R_MEM_SLOT_FOR_STRING);
-    Serial.println("...");
-    Serial.print("  Data: \"");
+    Serial.print("Writing string to the slot:");
+    Serial.print("    Data: \"");
     Serial.print(testString);
     Serial.println("\"");
-    Serial.print("  Length: ");
+    Serial.print("    Length: ");
     Serial.print(stringLen);
     Serial.println(" bytes");
 
@@ -226,18 +227,20 @@ void loop()
         printLibtropicError("  Tropic01.rMemWrite() failed, returnVal=", returnVal);
         cleanResourcesAndLoopForever();
     }
-    Serial.println("  OK - Data written successfully");
+    Serial.println("  OK");
     Serial.println();
 
     // Read string data back.
-    Serial.print("Reading string from slot ");
-    Serial.print(R_MEM_SLOT_FOR_STRING);
-    Serial.println("...");
+    Serial.println("Reading string from the slot...");
     memset(readBuffer, 0, sizeof(readBuffer));
 
     returnVal = tropic01.rMemRead(R_MEM_SLOT_FOR_STRING, readBuffer, sizeof(readBuffer), bytesRead);
     if (returnVal != LT_OK) {
         printLibtropicError("  Tropic01.rMemRead() failed, returnVal=", returnVal);
+        returnVal = tropic01.rMemErase(R_MEM_SLOT_FOR_STRING);
+        if (returnVal != LT_OK) {
+            printLibtropicError("  Additionally, failed to erase the R-Mem slot, returnVal=", returnVal);
+        }
         cleanResourcesAndLoopForever();
     }
     Serial.print("  Bytes read: ");
@@ -254,19 +257,22 @@ void loop()
     }
     else {
         Serial.println("  String data verification FAILED!");
+        returnVal = tropic01.rMemErase(R_MEM_SLOT_FOR_STRING);
+        if (returnVal != LT_OK) {
+            printLibtropicError("  Additionally, failed to erase the R-Mem slot, returnVal=", returnVal);
+        }
+        cleanResourcesAndLoopForever();
     }
     Serial.println();
 
     // Erase string data.
-    Serial.print("Erasing slot ");
-    Serial.print(R_MEM_SLOT_FOR_STRING);
-    Serial.println("...");
+    Serial.println("Erasing the slot...");
     returnVal = tropic01.rMemErase(R_MEM_SLOT_FOR_STRING);
     if (returnVal != LT_OK) {
         printLibtropicError("  Tropic01.rMemErase() failed, returnVal=", returnVal);
         cleanResourcesAndLoopForever();
     }
-    Serial.println("  OK - Slot erased successfully");
+    Serial.println("  OK");
 
     Serial.println();
     Serial.println("Success, entering an idle loop.");
