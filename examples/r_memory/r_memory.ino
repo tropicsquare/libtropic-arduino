@@ -85,6 +85,16 @@ psa_status_t psaStatus;
 // -----------------------------------------------------------------------------------------------------
 
 // ---------------------------------------- Utility functions ------------------------------------------
+// Helper function to save some source code lines when printing Libtropic errors using Serial.
+static void printLibtropicError(const char prefixMsg[], const lt_ret_t ret)
+{
+    Serial.print(prefixMsg);
+    Serial.print(ret);
+    Serial.print(" (");
+    Serial.print(lt_ret_verbose(ret));
+    Serial.println(")");
+}
+
 // Used when some error occurs.
 static void errorHandler(void)
 {
@@ -157,8 +167,7 @@ void setup()
     Serial.println("Initializing Tropic01 resources...");
     returnVal = tropic01.begin();
     if (returnVal != LT_OK) {
-        Serial.print("  Tropic01.begin() failed, returnVal=");
-        Serial.println(returnVal);
+        printLibtropicError("  Tropic01.begin() failed, returnVal=", returnVal);
         errorHandler();
     }
     Serial.println("  OK");
@@ -167,8 +176,7 @@ void setup()
     Serial.println("Starting Secure Channel Session with TROPIC01...");
     returnVal = tropic01.secureSessionStart(PAIRING_KEY_PRIV, PAIRING_KEY_PUB, PAIRING_KEY_SLOT);
     if (returnVal != LT_OK) {
-        Serial.print("  Tropic01.secureSessionStart() failed, returnVal=");
-        Serial.println(returnVal);
+        printLibtropicError("  Tropic01.secureSessionStart() failed, returnVal=", returnVal);
         errorHandler();
     }
     Serial.println("  OK");
@@ -193,8 +201,7 @@ void loop()
     Serial.println("...");
     returnVal = tropic01.rMemErase(R_MEM_SLOT_FOR_STRING);
     if (returnVal != LT_OK) {
-        Serial.print("  Tropic01.rMemErase() failed, returnVal=");
-        Serial.println(returnVal);
+        printLibtropicError("  Tropic01.rMemErase() failed, returnVal=", returnVal);
         errorHandler();
     }
     Serial.println("  OK - Slot erased successfully");
@@ -212,8 +219,7 @@ void loop()
 
     returnVal = tropic01.rMemWrite(R_MEM_SLOT_FOR_STRING, writeBuffer, stringLen);
     if (returnVal != LT_OK) {
-        Serial.print("  Tropic01.rMemWrite() failed, returnVal=");
-        Serial.println(returnVal);
+        printLibtropicError("  Tropic01.rMemWrite() failed, returnVal=", returnVal);
         errorHandler();
     }
     Serial.println("  OK - Data written successfully");
@@ -227,8 +233,7 @@ void loop()
 
     returnVal = tropic01.rMemRead(R_MEM_SLOT_FOR_STRING, readBuffer, sizeof(readBuffer), bytesRead);
     if (returnVal != LT_OK) {
-        Serial.print("  Tropic01.rMemRead() failed, returnVal=");
-        Serial.println(returnVal);
+        printLibtropicError("  Tropic01.rMemRead() failed, returnVal=", returnVal);
         errorHandler();
     }
     Serial.print("  Bytes read: ");
@@ -254,8 +259,7 @@ void loop()
     Serial.println("...");
     returnVal = tropic01.rMemErase(R_MEM_SLOT_FOR_STRING);
     if (returnVal != LT_OK) {
-        Serial.print("  Tropic01.rMemErase() failed, returnVal=");
-        Serial.println(returnVal);
+        printLibtropicError("  Tropic01.rMemErase() failed, returnVal=", returnVal);
         errorHandler();
     }
     Serial.println("  OK - Slot erased successfully");
