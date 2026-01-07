@@ -47,8 +47,12 @@ lt_ret_t Tropic01::begin(void)
         return LT_OK;
     }
 
-    this->initialized = true;
-    return lt_init(&this->handle);
+    lt_ret_t ret = lt_init(&this->handle);
+    if (ret == LT_OK) {
+        this->initialized = true;
+    }
+
+    return ret;
 }
 
 lt_ret_t Tropic01::end(void)
