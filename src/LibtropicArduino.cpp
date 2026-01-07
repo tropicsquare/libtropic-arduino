@@ -37,12 +37,31 @@ Tropic01::Tropic01(const uint16_t spiCSPin
     this->handle.l3.buff = l3Buff;
     this->handle.l3.buff_len = l3BuffLen;
 #endif
+
+    this->initialized = false;
 }
 
-lt_ret_t Tropic01::begin(void) { return lt_init(&this->handle); }
+lt_ret_t Tropic01::begin(void)
+{
+    if (this->initialized) {
+        return LT_OK;
+    }
+
+    lt_ret_t ret = lt_init(&this->handle);
+    if (ret == LT_OK) {
+        this->initialized = true;
+    }
+
+    return ret;
+}
 
 lt_ret_t Tropic01::end(void)
 {
+    if (!this->initialized) {
+        return LT_OK;
+    }
+    this->initialized = false;
+
     lt_ret_t ret_abort = LT_OK, ret_deinit = LT_OK;
 
     if (this->handle.l3.session_status == LT_SECURE_SESSION_ON) {

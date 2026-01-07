@@ -252,6 +252,7 @@ class Tropic01 {
     lt_dev_arduino_t device;
     lt_ctx_mbedtls_v4_t cryptoCtx;
     lt_handle_t handle;
+    bool initialized;
 };
 
 #endif  // LIBTROPIC_ARDUINO_H

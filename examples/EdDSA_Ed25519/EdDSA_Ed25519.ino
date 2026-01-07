@@ -102,14 +102,12 @@ static void printLibtropicError(const char prefixMsg[], const lt_ret_t ret)
     Serial.println(")");
 }
 
-// Used when some error occurs.
-static void errorHandler(void)
+static void cleanResourcesAndLoopForever(void)
 {
-    Serial.println("Starting cleanup...");
     tropic01.end();             // Aborts all communication with TROPIC01 and frees resources.
     mbedtls_psa_crypto_free();  // Frees MbedTLS's PSA Crypto resources.
+    SPI.end();                  // Deinitialize SPI.
 
-    Serial.println("Cleanup finished, entering infinite loop...");
     while (true);
 }
 
@@ -160,7 +158,7 @@ void setup()
     if (psaStatus != PSA_SUCCESS) {
         Serial.print("  MbedTLS's PSA Crypto initialization failed, psa_status_t=");
         Serial.println(psaStatus);
-        errorHandler();
+        cleanResourcesAndLoopForever();
     }
     Serial.println("  OK");
 
@@ -169,7 +167,7 @@ void setup()
     returnVal = tropic01.begin();
     if (returnVal != LT_OK) {
         printLibtropicError("  Tropic01.begin() failed, returnVal=", returnVal);
-        errorHandler();
+        cleanResourcesAndLoopForever();
     }
     Serial.println("  OK");
 
@@ -178,7 +176,7 @@ void setup()
     returnVal = tropic01.secureSessionStart(PAIRING_KEY_PRIV, PAIRING_KEY_PUB, PAIRING_KEY_SLOT);
     if (returnVal != LT_OK) {
         printLibtropicError("  Tropic01.secureSessionStart() failed, returnVal=", returnVal);
-        errorHandler();
+        cleanResourcesAndLoopForever();
     }
     Serial.println("  OK");
 
@@ -191,21 +189,39 @@ void setup()
 // ------------------------------------------ Loop function --------------------------------------------
 void loop()
 {
-    // Generate Ed25519 key in slot 1.
-    Serial.println("Generating Ed25519 key in slot 1...");
-    returnVal = tropic01.eccKeyGenerate(ECC_SLOT_ED25519, TR01_CURVE_ED25519);
+    Serial.print("Will use Ed25519 key slot #");
+    Serial.print(ECC_SLOT_ED25519);
+    Serial.println(" for the following EdDSA operations.");
+    Serial.println();
+
+    // Erase the slot before writing so the write does not fail if the slot was already written.
+    Serial.println("Erasing the Ed25519 key slot...");
+    returnVal = tropic01.eccKeyErase(ECC_SLOT_ED25519);
     if (returnVal != LT_OK) {
-        printLibtropicError("  Tropic01.eccKeyGenerate() failed, returnVal=", returnVal);
-        errorHandler();
+        printLibtropicError("  Tropic01.eccKeyErase() failed, returnVal=", returnVal);
+        cleanResourcesAndLoopForever();
     }
     Serial.println("  OK");
 
-    // Read Ed25519 public key from slot 1.
-    Serial.println("Reading Ed25519 public key from slot 1...");
+    // Generate Ed25519 key in the slot.
+    Serial.println("Generating Ed25519 key in the slot...");
+    returnVal = tropic01.eccKeyGenerate(ECC_SLOT_ED25519, TR01_CURVE_ED25519);
+    if (returnVal != LT_OK) {
+        printLibtropicError("  Tropic01.eccKeyGenerate() failed, returnVal=", returnVal);
+        cleanResourcesAndLoopForever();
+    }
+    Serial.println("  OK");
+
+    // Read Ed25519 public key from the slot.
+    Serial.println("Reading Ed25519 public key from the slot...");
     returnVal = tropic01.eccKeyRead(ECC_SLOT_ED25519, ed25519PubKey, sizeof(ed25519PubKey), curveType, keyOrigin);
     if (returnVal != LT_OK) {
         printLibtropicError("  Tropic01.eccKeyRead() failed, returnVal=", returnVal);
-        errorHandler();
+        returnVal = tropic01.eccKeyErase(ECC_SLOT_ED25519);
+        if (returnVal != LT_OK) {
+            printLibtropicError("  Additionally, failed to erase the Ed25519 key slot, returnVal=", returnVal);
+        }
+        cleanResourcesAndLoopForever();
     }
     Serial.print("  Curve type: ");
     Serial.println(curveType == TR01_CURVE_ED25519 ? "Ed25519" : "Unknown");
@@ -228,25 +244,28 @@ void loop()
     returnVal = tropic01.eddsaSign(ECC_SLOT_ED25519, (const uint8_t *)message, messageLen, ed25519Signature);
     if (returnVal != LT_OK) {
         printLibtropicError("  Tropic01.eddsaSign() failed, returnVal=", returnVal);
-        errorHandler();
+        returnVal = tropic01.eccKeyErase(ECC_SLOT_ED25519);
+        if (returnVal != LT_OK) {
+            printLibtropicError("  Additionally, failed to erase the Ed25519 key slot, returnVal=", returnVal);
+        }
+        cleanResourcesAndLoopForever();
     }
     printHex("  Signature", ed25519Signature, sizeof(ed25519Signature));
 
     Serial.println();
 
-    // Erase Ed25519 key from slot 1.
-    Serial.println("Erasing Ed25519 key from slot 1...");
+    // Erase Ed25519 key from the slot.
+    Serial.println("Erasing Ed25519 key from the slot...");
     returnVal = tropic01.eccKeyErase(ECC_SLOT_ED25519);
     if (returnVal != LT_OK) {
         printLibtropicError("  Tropic01.eccKeyErase() failed, returnVal=", returnVal);
-        errorHandler();
+        cleanResourcesAndLoopForever();
     }
     Serial.println("  OK");
 
     Serial.println();
     Serial.println("Success, entering an idle loop.");
     Serial.println("---------------------------------------------------------------");
-
-    while (true);  // Do nothing, end of example.
+    cleanResourcesAndLoopForever();
 }
 // -----------------------------------------------------------------------------------------------------
