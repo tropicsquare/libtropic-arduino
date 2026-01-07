@@ -32,7 +32,6 @@ class Tropic01 {
      * LT_USE_INT_PIN=1)
      * @param[in] l3Buff       User-defined L3 buffer (is one of the parameters only if LT_SEPARATE_L3_BUFF=1)
      * @param[in] l3BuffLen    Length of `lf_buff` (is one of the parameters only if LT_SEPARATE_L3_BUFF=1)
-     * @param[in] rngSeed      Seed for the PRNG (defaults to random())
      * @param[in] spi          Instance of `SPIClass` to use, defaults to default SPI instance set by `<SPI.h>`
      * @param[in] spiSettings  SPI settings, defaults to tested values. If you want to change them, keep
      * `SPISettings.dataOrder=MSBFIRST` and `SPISettings.dataMode=SPI_MODE0` (required by TROPIC01).
@@ -47,8 +46,7 @@ class Tropic01 {
              uint8_t l3Buff[], const uint16_t l3BuffLen
 #endif
              ,
-             const unsigned int rngSeed = random(), SPIClass &spi = ::SPI,
-             SPISettings spiSettings = SPISettings(10000000, MSBFIRST, SPI_MODE0));
+             SPIClass &spi = ::SPI, SPISettings spiSettings = SPISettings(10000000, MSBFIRST, SPI_MODE0));
 
     Tropic01() = delete;
     Tropic01(const Tropic01 &) = delete;
@@ -58,6 +56,8 @@ class Tropic01 {
 
     /**
      * @brief Initializes resources. Must be called before all other methods are called.
+     * @warning SPI.begin() is not called by this method, user must ensure SPI is initialized before calling this
+     * method.
      *
      * @retval  LT_OK  Method executed successfully
      * @retval  other  Method did not execute successfully, you might use lt_ret_verbose() to get verbose
@@ -67,6 +67,8 @@ class Tropic01 {
 
     /**
      * @brief Deinitialize resources. Should be called at the end of the program.
+     * @warning SPI.end() is not called by this method, user must ensure SPI is deinitialized after calling this
+     * method.
      *
      * @retval  LT_OK  Method executed successfully
      * @retval  other  Method did not execute successfully, you might use lt_ret_verbose() to get verbose
@@ -250,6 +252,7 @@ class Tropic01 {
     lt_dev_arduino_t device;
     lt_ctx_mbedtls_v4_t cryptoCtx;
     lt_handle_t handle;
+    bool initialized;
 };
 
 #endif  // LIBTROPIC_ARDUINO_H

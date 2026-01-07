@@ -127,13 +127,22 @@ struct MacAndDestroyNVM {
 // -----------------------------------------------------------------------------------------------------
 
 // ---------------------------------------- Local static functions -------------------------------------
-static void errorHandler(void)
+// Helper function to save some source code lines when printing Libtropic errors using Serial.
+static void printLibtropicError(const char prefixMsg[], const lt_ret_t ret)
 {
-    Serial.println("Starting cleanup...");
+    Serial.print(prefixMsg);
+    Serial.print(ret);
+    Serial.print(" (");
+    Serial.print(lt_ret_verbose(ret));
+    Serial.println(")");
+}
+
+static void cleanResourcesAndLoopForever(void)
+{
     tropic01.end();             // Aborts all communication with TROPIC01 and frees resources.
     mbedtls_psa_crypto_free();  // Frees MbedTLS's PSA Crypto resources.
+    SPI.end();                  // Deinitialize SPI.
 
-    Serial.println("Cleanup finished, entering infinite loop...");
     while (true);
 }
 
@@ -207,12 +216,13 @@ cleanup:
  * @param pinSize[in]       Length of PIN
  * @param finalKey[out]     32-byte final key derived from master secret
  *
- * @return LT_OK on success, error code otherwise
+ * @return true on success, false otherwise
  */
-static lt_ret_t pinSetup(const uint8_t *masterSecret, const uint8_t *pin, const uint8_t pinSize, uint8_t *finalKey)
+static bool pinSetup(const uint8_t *masterSecret, const uint8_t *pin, const uint8_t pinSize, uint8_t *finalKey)
 {
     if (!masterSecret || !pin || pinSize < PIN_SIZE_MIN || pinSize > PIN_SIZE_MAX || !finalKey) {
-        return LT_PARAM_ERR;
+        Serial.println("  pinSetup(): Invalid parameters!");
+        return false;
     }
 
     MacAndDestroyNVM nvm = {0};
@@ -233,9 +243,8 @@ static lt_ret_t pinSetup(const uint8_t *masterSecret, const uint8_t *pin, const 
     Serial.println("  Erasing R memory slot...");
     ret = tropic01.rMemErase(R_MEM_SLOT_MACANDD);
     if (ret != LT_OK) {
-        Serial.print("    Tropic01.rMemErase() failed, returnVal=");
-        Serial.println(ret);
-        return ret;
+        printLibtropicError("    Tropic01.rMemErase() failed, returnVal=", ret);
+        return false;
     }
     Serial.println("    OK");
 
@@ -246,29 +255,26 @@ static lt_ret_t pinSetup(const uint8_t *masterSecret, const uint8_t *pin, const 
     Serial.println("  Computing verification tag...");
     psa_ret = hmacSha256(masterSecret, MY_MASTER_SECRET_SIZE, byte_00, sizeof(byte_00), nvm.tag);
     if (psa_ret != PSA_SUCCESS) {
-        Serial.print("    hmacSha256() failed, returnVal=");
-        Serial.print(psa_ret);
-        Serial.println(" (psa_status_t)");
-        return LT_FAIL;
+        Serial.print("    hmacSha256() failed, psa_status_t=");
+        Serial.println(psa_ret);
+        return false;
     }
     Serial.println("    OK");
 
     // Compute u = HMAC(masterSecret, 0x01).
     psa_ret = hmacSha256(masterSecret, MY_MASTER_SECRET_SIZE, byte_01, sizeof(byte_01), u);
     if (psa_ret != PSA_SUCCESS) {
-        Serial.print("    hmacSha256() failed, returnVal=");
-        Serial.print(psa_ret);
-        Serial.println(" (psa_status_t)");
-        return LT_FAIL;
+        Serial.print("    hmacSha256() failed, psa_status_t=");
+        Serial.println(psa_ret);
+        return false;
     }
 
     // Compute v = HMAC(zeros, PIN).
     psa_ret = hmacSha256(zeros, sizeof(zeros), pin, pinSize, v);
     if (psa_ret != PSA_SUCCESS) {
-        Serial.print("    hmacSha256() failed, returnVal=");
-        Serial.print(psa_ret);
-        Serial.println(" (psa_status_t)");
-        return LT_FAIL;
+        Serial.print("    hmacSha256() failed, psa_status_t=");
+        Serial.println(psa_ret);
+        return false;
     }
 
     Serial.print("  Initializing ");
@@ -281,9 +287,8 @@ static lt_ret_t pinSetup(const uint8_t *masterSecret, const uint8_t *pin, const 
         if (ret != LT_OK) {
             Serial.print("    Slot ");
             Serial.print(i);
-            Serial.print(" init failed, returnVal=");
-            Serial.println(ret);
-            return ret;
+            printLibtropicError(" init failed, returnVal=", ret);
+            return false;
         }
 
         // Overwrite with v to get w_i.
@@ -291,9 +296,8 @@ static lt_ret_t pinSetup(const uint8_t *masterSecret, const uint8_t *pin, const 
         if (ret != LT_OK) {
             Serial.print("    Slot ");
             Serial.print(i);
-            Serial.print(" overwrite failed, returnVal=");
-            Serial.println(ret);
-            return ret;
+            printLibtropicError(" overwrite failed, returnVal=", ret);
+            return false;
         }
 
         // Re-initialize with u.
@@ -301,18 +305,16 @@ static lt_ret_t pinSetup(const uint8_t *masterSecret, const uint8_t *pin, const 
         if (ret != LT_OK) {
             Serial.print("    Slot ");
             Serial.print(i);
-            Serial.print(" re-init failed, returnVal=");
-            Serial.println(ret);
-            return ret;
+            printLibtropicError(" re-init failed, returnVal=", ret);
+            return false;
         }
 
         // Derive k_i = HMAC(w_i, PIN).
         psa_ret = hmacSha256(w_i, sizeof(w_i), pin, pinSize, k_i);
         if (psa_ret != PSA_SUCCESS) {
-            Serial.print("    hmacSha256() failed, returnVal=");
-            Serial.print(psa_ret);
-            Serial.println(" (psa_status_t)");
-            return LT_FAIL;
+            Serial.print("    hmacSha256() failed, psa_status_t=");
+            Serial.println(psa_ret);
+            return false;
         }
 
         // Encrypt master secret with k_i.
@@ -331,19 +333,17 @@ static lt_ret_t pinSetup(const uint8_t *masterSecret, const uint8_t *pin, const 
     Serial.println("  Saving NVM data to R memory...");
     ret = tropic01.rMemWrite(R_MEM_SLOT_MACANDD, (uint8_t *)&nvm, sizeof(nvm));
     if (ret != LT_OK) {
-        Serial.print("    Tropic01.rMemWrite() failed, returnVal=");
-        Serial.println(ret);
-        return ret;
+        printLibtropicError("    Tropic01.rMemWrite() failed, returnVal=", ret);
+        return false;
     }
     Serial.println("    OK");
 
     // Derive final key = HMAC(masterSecret, "2").
     psa_ret = hmacSha256(masterSecret, MY_MASTER_SECRET_SIZE, (uint8_t *)"2", 1, finalKey);
     if (psa_ret != PSA_SUCCESS) {
-        Serial.print("    hmacSha256() failed, returnVal=");
-        Serial.print(psa_ret);
-        Serial.println(" (psa_status_t)");
-        return LT_FAIL;
+        Serial.print("    hmacSha256() failed, psa_status_t=");
+        Serial.println(psa_ret);
+        return false;
     }
 
     Serial.println("PIN Setup completed successfully!");
@@ -355,7 +355,7 @@ static lt_ret_t pinSetup(const uint8_t *masterSecret, const uint8_t *pin, const 
     memset(k_i, 0, sizeof(k_i));
     memset(u, 0, sizeof(u));
 
-    return LT_OK;
+    return true;
 }
 
 /**
@@ -365,12 +365,13 @@ static lt_ret_t pinSetup(const uint8_t *masterSecret, const uint8_t *pin, const 
  * @param pinSize[in]   Length of PIN
  * @param finalKey[out] 32-byte final key (only valid if PIN correct)
  *
- * @return LT_OK on correct PIN, LT_FAIL on incorrect PIN or error
+ * @return true on correct PIN, false otherwise
  */
-static lt_ret_t pinVerify(const uint8_t *pin, const uint8_t pinSize, uint8_t *finalKey)
+static bool pinVerify(const uint8_t *pin, const uint8_t pinSize, uint8_t *finalKey)
 {
     if (!pin || pinSize < PIN_SIZE_MIN || pinSize > PIN_SIZE_MAX || !finalKey) {
-        return LT_PARAM_ERR;
+        Serial.println("  pinVerify(): Invalid parameters!");
+        return false;
     }
 
     MacAndDestroyNVM nvm = {0};
@@ -394,9 +395,8 @@ static lt_ret_t pinVerify(const uint8_t *pin, const uint8_t pinSize, uint8_t *fi
     Serial.println("  Loading NVM data from R memory...");
     ret = tropic01.rMemRead(R_MEM_SLOT_MACANDD, (uint8_t *)&nvm, sizeof(nvm), bytesRead);
     if (ret != LT_OK) {
-        Serial.print("    Tropic01.rMemRead() failed, returnVal=");
-        Serial.println(ret);
-        return ret;
+        printLibtropicError("    Tropic01.rMemRead() failed, returnVal=", ret);
+        return false;
     }
     Serial.println("    OK");
 
@@ -405,7 +405,7 @@ static lt_ret_t pinVerify(const uint8_t *pin, const uint8_t pinSize, uint8_t *fi
     Serial.println(nvm.attemptCount);
     if (nvm.attemptCount == 0) {
         Serial.println("  No attempts remaining!");
-        return LT_FAIL;
+        return false;
     }
 
     // Decrement attempt count.
@@ -415,44 +415,39 @@ static lt_ret_t pinVerify(const uint8_t *pin, const uint8_t pinSize, uint8_t *fi
     Serial.println("  Updating attempt count...");
     ret = tropic01.rMemErase(R_MEM_SLOT_MACANDD);
     if (ret != LT_OK) {
-        Serial.print("    Tropic01.rMemErase() failed, returnVal=");
-        Serial.println(ret);
-        return ret;
+        printLibtropicError("    Tropic01.rMemErase() failed, returnVal=", ret);
+        return false;
     }
     ret = tropic01.rMemWrite(R_MEM_SLOT_MACANDD, (uint8_t *)&nvm, sizeof(nvm));
     if (ret != LT_OK) {
-        Serial.print("    Tropic01.rMemWrite() failed, returnVal=");
-        Serial.println(ret);
-        return ret;
+        printLibtropicError("    Tropic01.rMemWrite() failed, returnVal=", ret);
+        return false;
     }
     Serial.println("    OK");
 
     // Compute v' = HMAC(zeros, PIN).
     psa_ret = hmacSha256(zeros, sizeof(zeros), pin, pinSize, v_);
     if (psa_ret != PSA_SUCCESS) {
-        Serial.print("    hmacSha256() failed, returnVal=");
-        Serial.print(psa_ret);
-        Serial.println(" (psa_status_t)");
-        return LT_FAIL;
+        Serial.print("    hmacSha256() failed, psa_status_t=");
+        Serial.println(psa_ret);
+        return false;
     }
 
     // Execute MAC-and-Destroy to get w'.
     Serial.println("  Executing MAC-and-Destroy...");
     ret = tropic01.macAndDestroy((lt_mac_and_destroy_slot_t)nvm.attemptCount, v_, w_i);
     if (ret != LT_OK) {
-        Serial.print("    Tropic01.macAndDestroy() failed, returnVal=");
-        Serial.println(ret);
-        return ret;
+        printLibtropicError("    Tropic01.macAndDestroy() failed, returnVal=", ret);
+        return false;
     }
     Serial.println("    OK");
 
     // Compute k'_i = HMAC(w', PIN).
     psa_ret = hmacSha256(w_i, sizeof(w_i), pin, pinSize, k_i);
     if (psa_ret != PSA_SUCCESS) {
-        Serial.print("    hmacSha256() failed, returnVal=");
-        Serial.print(psa_ret);
-        Serial.println(" (psa_status_t)");
-        return LT_FAIL;
+        Serial.print("    hmacSha256() failed, psa_status_t=");
+        Serial.println(psa_ret);
+        return false;
     }
 
     // Decrypt to get s'.
@@ -461,10 +456,9 @@ static lt_ret_t pinVerify(const uint8_t *pin, const uint8_t pinSize, uint8_t *fi
     // Compute t' = HMAC(s', 0x00).
     psa_ret = hmacSha256(s_, sizeof(s_), byte_00, sizeof(byte_00), t_);
     if (psa_ret != PSA_SUCCESS) {
-        Serial.print("    hmacSha256() failed, returnVal=");
-        Serial.print(psa_ret);
-        Serial.println(" (psa_status_t)");
-        return LT_FAIL;
+        Serial.print("    hmacSha256() failed, psa_status_t=");
+        Serial.println(psa_ret);
+        return false;
     }
 
     // Verify tag.
@@ -473,7 +467,7 @@ static lt_ret_t pinVerify(const uint8_t *pin, const uint8_t pinSize, uint8_t *fi
         Serial.println("    Tag mismatch - Incorrect PIN!");
         memset(s_, 0, sizeof(s_));
         memset(k_i, 0, sizeof(k_i));
-        return LT_FAIL;
+        return false;
     }
     Serial.println("    OK - PIN is correct!");
 
@@ -481,10 +475,9 @@ static lt_ret_t pinVerify(const uint8_t *pin, const uint8_t pinSize, uint8_t *fi
     // Compute u = HMAC(s', 0x01).
     psa_ret = hmacSha256(s_, sizeof(s_), byte_01, sizeof(byte_01), u);
     if (psa_ret != PSA_SUCCESS) {
-        Serial.print("    hmacSha256() failed, returnVal=");
-        Serial.print(psa_ret);
-        Serial.println(" (psa_status_t)");
-        return LT_FAIL;
+        Serial.print("    hmacSha256() failed, psa_status_t=");
+        Serial.println(psa_ret);
+        return false;
     }
 
     Serial.print("  Reinitializing ");
@@ -496,9 +489,8 @@ static lt_ret_t pinVerify(const uint8_t *pin, const uint8_t pinSize, uint8_t *fi
         if (ret != LT_OK) {
             Serial.print("    Slot ");
             Serial.print(x);
-            Serial.print(" re-init failed, returnVal=");
-            Serial.println(ret);
-            return ret;
+            printLibtropicError(" re-init failed, returnVal=", ret);
+            return false;
         }
     }
     Serial.println("    OK");
@@ -510,25 +502,22 @@ static lt_ret_t pinVerify(const uint8_t *pin, const uint8_t pinSize, uint8_t *fi
     Serial.println("  Saving updated NVM data...");
     ret = tropic01.rMemErase(R_MEM_SLOT_MACANDD);
     if (ret != LT_OK) {
-        Serial.print("    Tropic01.rMemErase() failed, returnVal=");
-        Serial.println(ret);
-        return ret;
+        printLibtropicError("    Tropic01.rMemErase() failed, returnVal=", ret);
+        return false;
     }
     ret = tropic01.rMemWrite(R_MEM_SLOT_MACANDD, (uint8_t *)&nvm, sizeof(nvm));
     if (ret != LT_OK) {
-        Serial.print("    Tropic01.rMemWrite() failed, returnVal=");
-        Serial.println(ret);
-        return ret;
+        printLibtropicError("    Tropic01.rMemWrite() failed, returnVal=", ret);
+        return false;
     }
     Serial.println("    OK");
 
     // Derive final key = HMAC(s', "2").
     psa_ret = hmacSha256(s_, sizeof(s_), (uint8_t *)"2", 1, finalKey);
     if (psa_ret != PSA_SUCCESS) {
-        Serial.print("    hmacSha256() failed, returnVal=");
-        Serial.print(psa_ret);
-        Serial.println(" (psa_status_t)");
-        return LT_FAIL;
+        Serial.print("    hmacSha256() failed, psa_status_t=");
+        Serial.println(psa_ret);
+        return false;
     }
 
     Serial.println("PIN Verification successful!");
@@ -540,15 +529,20 @@ static lt_ret_t pinVerify(const uint8_t *pin, const uint8_t pinSize, uint8_t *fi
     memset(k_i, 0, sizeof(k_i));
     memset(s_, 0, sizeof(s_));
 
-    return LT_OK;
+    return true;
 }
 // -----------------------------------------------------------------------------------------------------
 
 // ------------------------------------------ Setup function -------------------------------------------
 void setup()
 {
+    // Initialize SPI (using the default SPI instance defined in <SPI.h>).
+    // If you want to use non-default SPI instance, don't forget to pass it to the
+    // Tropic01() constructor (otherwise it will use the default SPI instance).
+    SPI.begin();
+
     Serial.begin(9600);
-    while (!Serial);  // Wait for serial port to connect (useful for native USB)
+    while (!Serial);  // Wait for serial port to connect.
 
     Serial.println("===============================================================");
     Serial.println("========== TROPIC01 MAC-and-Destroy PIN Verification ==========");
@@ -567,7 +561,7 @@ void setup()
     if (psaStatus != PSA_SUCCESS) {
         Serial.print("  MbedTLS's PSA Crypto initialization failed, psa_status_t=");
         Serial.println(psaStatus);
-        errorHandler();
+        cleanResourcesAndLoopForever();
     }
     Serial.println("  OK");
 
@@ -575,9 +569,8 @@ void setup()
     Serial.println("Initializing Tropic01 resources...");
     returnVal = tropic01.begin();
     if (returnVal != LT_OK) {
-        Serial.print("  Tropic01.begin() failed, returnVal=");
-        Serial.println(returnVal);
-        errorHandler();
+        printLibtropicError("  Tropic01.begin() failed, returnVal=", returnVal);
+        cleanResourcesAndLoopForever();
     }
     Serial.println("  OK");
 
@@ -585,9 +578,8 @@ void setup()
     Serial.println("Starting Secure Channel Session with TROPIC01...");
     returnVal = tropic01.secureSessionStart(PAIRING_KEY_PRIV, PAIRING_KEY_PUB, PAIRING_KEY_SLOT);
     if (returnVal != LT_OK) {
-        Serial.print("  Tropic01.secureSessionStart() failed, returnVal=");
-        Serial.println(returnVal);
-        errorHandler();
+        printLibtropicError("  Tropic01.secureSessionStart() failed, returnVal=", returnVal);
+        cleanResourcesAndLoopForever();
     }
     Serial.println("  OK");
 
@@ -620,11 +612,9 @@ void loop()
 
     // Set up PIN.
     uint8_t finalKeySetup[32];
-    returnVal = pinSetup(myMasterSecret, myPin, sizeof(myPin), finalKeySetup);
-    if (returnVal != LT_OK) {
-        Serial.print("PIN setup failed, returnVal=");
-        Serial.println(returnVal);
-        errorHandler();
+    if (!pinSetup(myMasterSecret, myPin, sizeof(myPin), finalKeySetup)) {
+        Serial.println("PIN setup failed!");
+        cleanResourcesAndLoopForever();
     }
     printHex("Final Key", finalKeySetup, sizeof(finalKeySetup));
 
@@ -657,10 +647,9 @@ void loop()
         Serial.println(wrongAttempts);
 
         uint8_t finalKeyWrong[32];
-        returnVal = pinVerify(wrongPin, sizeof(wrongPin), finalKeyWrong);
-        if (returnVal == LT_OK) {
+        if (pinVerify(wrongPin, sizeof(wrongPin), finalKeyWrong)) {
             Serial.println("ERROR: Wrong PIN was accepted!");
-            errorHandler();
+            cleanResourcesAndLoopForever();
         }
         Serial.println();
     }
@@ -679,11 +668,9 @@ void loop()
     Serial.println();
 
     uint8_t finalKeyVerify[32];
-    returnVal = pinVerify(myPin, sizeof(myPin), finalKeyVerify);
-    if (returnVal != LT_OK) {
-        Serial.print("PIN verification failed, returnVal=");
-        Serial.println(returnVal);
-        errorHandler();
+    if (!pinVerify(myPin, sizeof(myPin), finalKeyVerify)) {
+        Serial.println("PIN verification failed!");
+        cleanResourcesAndLoopForever();
     }
     printHex("Final Key", finalKeyVerify, sizeof(finalKeyVerify));
     Serial.println();
@@ -695,13 +682,12 @@ void loop()
     }
     else {
         Serial.println("  Final keys DO NOT MATCH - Error!");
-        errorHandler();
+        cleanResourcesAndLoopForever();
     }
 
     Serial.println();
     Serial.println("Success, entering an idle loop.");
     Serial.println("---------------------------------------------------------------");
-
-    while (true);  // Do nothing, end of example.
+    cleanResourcesAndLoopForever();
 }
 // -----------------------------------------------------------------------------------------------------

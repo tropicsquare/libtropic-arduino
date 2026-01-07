@@ -90,14 +90,22 @@ psa_status_t mbedtlsInitStatus;
 // -----------------------------------------------------------------------------------------------------
 
 // ---------------------------------------- Utility functions ------------------------------------------
-// Used when some error occurs.
-void errorHandler(void)
+// Helper function to save some source code lines when printing Libtropic errors using Serial.
+static void printLibtropicError(const char prefixMsg[], const lt_ret_t ret)
 {
-    Serial.println("Starting cleanup...");
+    Serial.print(prefixMsg);
+    Serial.print(ret);
+    Serial.print(" (");
+    Serial.print(lt_ret_verbose(ret));
+    Serial.println(")");
+}
+
+static void cleanResourcesAndLoopForever(void)
+{
     tropic01.end();             // Aborts all communication with TROPIC01 and frees resources.
     mbedtls_psa_crypto_free();  // Frees MbedTLS's PSA Crypto resources.
+    SPI.end();                  // Deinitialize SPI.
 
-    Serial.println("Cleanup finished, entering infinite loop...");
     while (true);
 }
 // -----------------------------------------------------------------------------------------------------
@@ -105,7 +113,14 @@ void errorHandler(void)
 // ------------------------------------------ Setup function -------------------------------------------
 void setup()
 {
+    // Initialize SPI (using the default SPI instance defined in <SPI.h>).
+    // If you want to use non-default SPI instance, don't forget to pass it to the
+    // Tropic01() constructor (otherwise it will use the default SPI instance).
+    SPI.begin();
+
     Serial.begin(9600);
+    while (!Serial);  // Wait for serial port to connect.
+
     Serial.println("===============================================================");
     Serial.println("================ TROPIC01 Hello World Example =================");
     Serial.println("===============================================================");
@@ -119,18 +134,16 @@ void setup()
     if (mbedtlsInitStatus != PSA_SUCCESS) {
         Serial.print("MbedTLS's PSA Crypto initialization failed, psa_status_t=");
         Serial.println(mbedtlsInitStatus);
-        errorHandler();
+        cleanResourcesAndLoopForever();
     }
     Serial.println("  OK");
 
     // Init Tropic01 resources.
     Serial.println("Initializing Tropic01 resources...");
     returnVal = tropic01.begin();
-
     if (returnVal != LT_OK) {
-        Serial.print("Tropic01.begin() failed, returnVal=");
-        Serial.println(returnVal);
-        errorHandler();
+        printLibtropicError("  Tropic01.begin() failed, returnVal=", returnVal);
+        cleanResourcesAndLoopForever();
     }
     Serial.println("  OK");
 
@@ -138,9 +151,8 @@ void setup()
     Serial.println("Starting Secure Channel Session with TROPIC01...");
     returnVal = tropic01.secureSessionStart(PAIRING_KEY_PRIV, PAIRING_KEY_PUB, PAIRING_KEY_SLOT);
     if (returnVal != LT_OK) {
-        Serial.print("Tropic01.secureSessionStart() failed, returnVal=");
-        Serial.println(returnVal);
-        errorHandler();
+        printLibtropicError("  Tropic01.secureSessionStart() failed, returnVal=", returnVal);
+        cleanResourcesAndLoopForever();
     }
     Serial.println("  OK");
 
@@ -162,9 +174,8 @@ void loop()
     // Ping TROPIC01 with our message.
     returnVal = tropic01.ping(pingMsgToSend, pingMsgToReceive, sizeof(pingMsgToSend));
     if (returnVal != LT_OK) {
-        Serial.print("Tropic01.ping() failed, returnVal=");
-        Serial.println(returnVal);
-        errorHandler();
+        printLibtropicError("  Tropic01.ping() failed, returnVal=", returnVal);
+        cleanResourcesAndLoopForever();
     }
     Serial.println("  OK");
 

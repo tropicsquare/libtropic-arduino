@@ -26,7 +26,7 @@ jobs:
               echo "DO_RELEASE=false" >> $GITHUB_OUTPUT
             fi
 
-  create_release_and_deploy_docs:
+  create_release:
     needs: check_tag_branch
     runs-on: ubuntu-latest
     if: ${{ needs.check_tag_branch.outputs.do_release == 'true' }}  # Skip release if tag is not on main
