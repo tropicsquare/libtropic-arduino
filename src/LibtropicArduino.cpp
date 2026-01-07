@@ -57,9 +57,12 @@ lt_ret_t Tropic01::begin(void)
 
 lt_ret_t Tropic01::end(void)
 {
-    lt_ret_t ret_abort = LT_OK, ret_deinit = LT_OK;
-
+    if (!this->initialized) {
+        return LT_OK;
+    }
     this->initialized = false;
+
+    lt_ret_t ret_abort = LT_OK, ret_deinit = LT_OK;
 
     if (this->handle.l3.session_status == LT_SECURE_SESSION_ON) {
         ret_abort = this->secureSessionEnd();
