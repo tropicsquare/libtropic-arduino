@@ -82,7 +82,6 @@ Tropic01 tropic01(TROPIC01_CS_PIN
 lt_ret_t returnVal;                            // Used for return values of Tropic01's methods.
 char pingMsgToSend[] = "Hello World!";         // Ping message we will send to TROPIC01 via the Secure Channel.
 char pingMsgToReceive[sizeof(pingMsgToSend)];  // Buffer for receiving the Ping message from TROPIC01.
-bool callTropic01End = false;                  // Whether to call Tropic01.end() in cleanup function.
 // -----------------------------------------------------------------------------------------------------
 
 // ------------------------------------------ Other variables ------------------------------------------
@@ -103,10 +102,7 @@ static void printLibtropicError(const char prefixMsg[], const lt_ret_t ret)
 
 static void cleanResourcesAndLoopForever(void)
 {
-    if (callTropic01End) {
-        // end() should be called only if begin() was called successfully.
-        tropic01.end();  // Aborts all communication with TROPIC01 and frees resources.
-    }
+    tropic01.end();             // Aborts all communication with TROPIC01 and frees resources.
     mbedtls_psa_crypto_free();  // Frees MbedTLS's PSA Crypto resources.
     SPI.end();                  // Deinitialize SPI.
 
@@ -150,7 +146,6 @@ void setup()
         cleanResourcesAndLoopForever();
     }
     Serial.println("  OK");
-    callTropic01End = true;
 
     // Start Secure Channel Session with TROPIC01.
     Serial.println("Starting Secure Channel Session with TROPIC01...");
