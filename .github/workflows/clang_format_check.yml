@@ -6,11 +6,17 @@ on:
       - develop
     paths:
       - '**.c'
+      - '**.cpp'
+      - '**.ino'
       - '**.h'
+      - '**.hpp'
   pull_request:
     paths:
       - '**.c'
+      - '**.cpp'
+      - '**.ino'
       - '**.h'
+      - '**.hpp'
 
 jobs:
   check-format:
