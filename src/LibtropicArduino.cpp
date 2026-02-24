@@ -779,16 +779,24 @@ lt_ret_t Tropic01::secureSessionOFF(void)
 
 //---------------
 
-lt_ret_t Tropic01::getFWVersion(uint8_t *fw_ver)
+lt_ret_t Tropic01::getRiscvFWVersion(uint8_t *fw_ver)
 {
     lt_ret_t ret = LT_OK;
 
-    ret = lt_reboot(&this->handle, TR01_REBOOT);
+    // 1. Save current mode to be able to restore it later
+    lt_tr01_mode_t original_mode;
+    ret = lt_get_tr01_mode(&this->handle, &original_mode);
     if (ret != LT_OK) {
-        lt_deinit(&this->handle);
         return ret;
     }
 
+    // 2. Restart in Application Mode
+    ret = lt_reboot(&this->handle, TR01_REBOOT);
+    if (ret != LT_OK) {
+        return ret;
+    }
+
+    // 3. Verify that the device is in application mode
     lt_tr01_mode_t mode = LT_TR01_APPLICATION;
 
     ret = lt_get_tr01_mode(&this->handle, &mode);
@@ -796,55 +804,110 @@ lt_ret_t Tropic01::getFWVersion(uint8_t *fw_ver)
         return ret;
     }
     else {
-        lt_deinit(&this->handle);
         return ret;
     }
+
+    // 4. Read RISC-V application firmware version
+    ret = lt_get_info_riscv_fw_ver(&this->handle, fw_ver);
+    if (ret != LT_OK) {
+        return ret;
+    }
+
+    // 5. Restore original mode (if it was application mode, reboot to application mode, if it was maintenance mode, reboot to maintenance mode)
+    if (original_mode == LT_TR01_APPLICATION) {
+        lt_reboot(&this->handle, TR01_REBOOT);
+    }
+    else if (original_mode == LT_TR01_MAINTENANCE) {
+        lt_reboot(&this->handle, TR01_MAINTENANCE_REBOOT);
+    }
+
+
 
     return ret;
 }
 
-String Tropic01::printFWVersion(uint8_t *fw_ver)
+String Tropic01::printRiscvFWVersion(uint8_t *fw_ver)
 {
     String response = "";
 
-    // Getting RISCV app firmware version
-    if (lt_get_info_riscv_fw_ver(&this->handle, fw_ver) == LT_OK) {
-        char buff_2X[3];
-        sprintf(buff_2X, "%02X", fw_ver[3]);
-        String fw_ver_3 = String(buff_2X);
-        sprintf(buff_2X, "%02X", fw_ver[2]);
-        String fw_ver_2 = String(buff_2X);
-        sprintf(buff_2X, "%02X", fw_ver[1]);
-        String fw_ver_1 = String(buff_2X);
-        sprintf(buff_2X, "%02X", fw_ver[0]);
-        String fw_ver_0 = String(buff_2X);
-        response = "OK:RISC-V application FW version = " + fw_ver_3 + "." + fw_ver_2 + "." + fw_ver_1 + " (+ ."
-                   + fw_ver_0 + "):";
-    }
-    else {
-        response = "ERR:FAILED_TO_GET_RISCV_FW_VERSION;\n";
-        lt_deinit(&this->handle);
-        return response;
+    char buff_2X[3];
+    sprintf(buff_2X, "%02X", fw_ver[3]);
+    String fw_ver_3 = String(buff_2X);
+    sprintf(buff_2X, "%02X", fw_ver[2]);
+    String fw_ver_2 = String(buff_2X);
+    sprintf(buff_2X, "%02X", fw_ver[1]);
+    String fw_ver_1 = String(buff_2X);
+    sprintf(buff_2X, "%02X", fw_ver[0]);
+    String fw_ver_0 = String(buff_2X);
+    response = "OK:RISC-V application FW version = " + fw_ver_3 + "." + fw_ver_2 + "." + fw_ver_1 + " (+ ."
+                + fw_ver_0 + "):";
+
+    return response;
+}
+
+//---------------
+
+lt_ret_t Tropic01::getSpectFWVersion(uint8_t *fw_ver)
+{
+    lt_ret_t ret = LT_OK;
+
+    // 1. Save current mode to be able to restore it later
+    lt_tr01_mode_t original_mode;
+    ret = lt_get_tr01_mode(&this->handle, &original_mode);
+    if (ret != LT_OK) {
+        return ret;
     }
 
-    if (lt_get_info_spect_fw_ver(&this->handle, fw_ver) == LT_OK) {
-        char buff_2X[3];
-        sprintf(buff_2X, "%02X", fw_ver[3]);
-        String fw_ver_3 = String(buff_2X);
-        sprintf(buff_2X, "%02X", fw_ver[2]);
-        String fw_ver_2 = String(buff_2X);
-        sprintf(buff_2X, "%02X", fw_ver[1]);
-        String fw_ver_1 = String(buff_2X);
-        sprintf(buff_2X, "%02X", fw_ver[0]);
-        String fw_ver_0 = String(buff_2X);
-        response
-            += "SPECT firmware version= " + fw_ver_3 + "." + fw_ver_2 + "." + fw_ver_1 + "  (+ ." + fw_ver_0 + ");\n";
+    // 2. Restart in Application Mode
+    ret = lt_reboot(&this->handle, TR01_REBOOT);
+    if (ret != LT_OK) {
+        return ret;
+    }
+
+    // 3. Verify that the device is in application mode
+    lt_tr01_mode_t mode = LT_TR01_APPLICATION;
+
+    ret = lt_get_tr01_mode(&this->handle, &mode);
+    if (ret == LT_OK) {
+        return ret;
     }
     else {
-        response = "ERR:FAILED_TO_GET_SPECT_FW_VERSION;\n";
-        lt_deinit(&this->handle);
-        return response;
+        return ret;
     }
+
+    // 4. Read RISC-V application firmware version
+    ret = lt_get_info_spect_fw_ver(&this->handle, fw_ver);
+    if (ret != LT_OK) {
+        return ret;
+    }
+
+    // 5. Restore original mode (if it was application mode, reboot to application mode, if it was maintenance mode, reboot to maintenance mode)
+    if (original_mode == LT_TR01_APPLICATION) {
+        lt_reboot(&this->handle, TR01_REBOOT);
+    }
+    else if (original_mode == LT_TR01_MAINTENANCE) {
+        lt_reboot(&this->handle, TR01_MAINTENANCE_REBOOT);
+    }
+
+
+
+    return ret;
+}
+
+String Tropic01::printSpectFWVersion(uint8_t *fw_ver)
+{
+    String response = "";
+
+    char buff_2X[3];
+    sprintf(buff_2X, "%02X", fw_ver[3]);
+    String fw_ver_3 = String(buff_2X);
+    sprintf(buff_2X, "%02X", fw_ver[2]);
+    String fw_ver_2 = String(buff_2X);
+    sprintf(buff_2X, "%02X", fw_ver[1]);
+    String fw_ver_1 = String(buff_2X);
+    sprintf(buff_2X, "%02X", fw_ver[0]);
+    String fw_ver_0 = String(buff_2X);
+    response+= "SPECT firmware version= " + fw_ver_3 + "." + fw_ver_2 + "." + fw_ver_1 + "  (+ ." + fw_ver_0 + ");\n";
 
     return response;
 }
