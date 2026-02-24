@@ -10,12 +10,34 @@
  */
 
 #include <Arduino.h>
-#include <SPI.h>
-
+// #include <SPI.h>
+#include "hardware/gpio.h"
+#include "hardware/spi.h"
 #include "libtropic.h"
 #include "libtropic_common.h"
-#include "libtropic_mbedtls_v4.h"
-#include "libtropic_port_arduino.h"
+#include "pico/stdlib.h"
+
+#include "libtropic/cal/mbedtls_v4/libtropic_mbedtls_v4.h"
+
+#include "libtropic.h"
+
+
+#include "libtropic_trezor_crypto.h"
+extern "C" {
+#include "lt_sha256.h"  // to do the hash
+}
+
+#include "libtropic_port_rpi_pico.h"
+
+/* ---------------- SPI ---------------- */
+#define LT_SPI_PORT spi0
+#define SPI_BAUDRATE 1000000  // 1 MHz, can be adjusted according to the device
+
+// SPI pins (adjust them to your actual connection)
+#define SPI_SCK_PIN 2   // GPIO2 → SCK
+#define SPI_MOSI_PIN 3  // GPIO3 → MOSI - SDI
+#define SPI_MISO_PIN 4  // GPIO4 → MISO - SDO
+#define SPI_CS_PIN 5    // GPIO5 → Chip Select
 
 /**
  * @brief Instance of this class is used to communicate with one TROPIC01 chip.
@@ -36,19 +58,17 @@ class Tropic01 {
      * @param[in] spiSettings  SPI settings, defaults to tested values. If you want to change them, keep
      * `SPISettings.dataOrder=MSBFIRST` and `SPISettings.dataMode=SPI_MODE0` (required by TROPIC01).
      */
-    Tropic01(const uint16_t spiCSPin
+    Tropic01(
 #if LT_USE_INT_PIN
-             ,
-             const uint16_t intGpioPin
+        , const uint16_t intGpioPin
 #endif
 #if LT_SEPARATE_L3_BUFF
-             ,
-             uint8_t l3Buff[], const uint16_t l3BuffLen
+        ,
+        uint8_t l3Buff[], const uint16_t l3BuffLen
 #endif
-             ,
-             SPIClass &spi = ::SPI, SPISettings spiSettings = SPISettings(10000000, MSBFIRST, SPI_MODE0));
+    );
 
-    Tropic01() = delete;
+    // Tropic01() = delete;
     Tropic01(const Tropic01 &) = delete;
     Tropic01 &operator=(const Tropic01 &) = delete;
     Tropic01(Tropic01 &&) = delete;
@@ -248,9 +268,50 @@ class Tropic01 {
      */
     lt_ret_t macAndDestroy(const lt_mac_and_destroy_slot_t slot, const uint8_t dataOut[], uint8_t dataIn[]);
 
+    //************************************************************************************ */
+    //************************** Additional functions for rpi-pico  *************************
+    //************************************************************************************ */
+
+    lt_handle_t *getHandle();
+
+    // chip_id
+    lt_ret_t getChipID(lt_chip_id_t &chipId);
+    String printChipID(lt_chip_id_t chip_id);  // for print to uart
+
+    // bootloader version
+    lt_ret_t getBootloaderFWVersion(uint8_t *fw_ver);
+    String printBootloaderVersion(uint8_t *fw_ver);  // for print to uart
+    String get_headers_v1();
+    String header_boot_v1_0_1(uint8_t *data, lt_bank_id_t bank_id);
+    String get_headers_v2();
+    String header_boot_v2_0_1(uint8_t *data, lt_bank_id_t bank_id);
+
+    // secure session
+    lt_ret_t secureSessionON(const lt_pkey_index_t pkey_index, const uint8_t shipriv[], const uint8_t shipub[]);
+    lt_ret_t secureSessionOFF(void);
+
+    // Riscv fw version
+    lt_ret_t getRiscvFWVersion(uint8_t *fw_ver);
+    String printRiscvFWVersion(uint8_t *fw_ver);  // for print to uart
+
+    // Riscv fw version
+    lt_ret_t getSpectFWVersion(uint8_t *fw_ver);
+    String printSpectFWVersion(uint8_t *fw_ver);  // for print to uart
+
+    // random value
+    lt_ret_t getRandomValue(uint8_t *rand_buf, const uint16_t rand_len);
+
+    // hash message
+    lt_ret_t hashMessage(const uint8_t *message, const uint32_t message_len, uint8_t *hash);
+
+    // mcounter
+    lt_ret_t mcounterInit(const lt_mcounter_index_t index, const uint32_t value);
+    lt_ret_t mcounterGet(const lt_mcounter_index_t index, uint32_t &value);
+    lt_ret_t mcounterUpdate(const lt_mcounter_index_t index);
+
    private:
-    lt_dev_arduino_t device;
-    lt_ctx_mbedtls_v4_t cryptoCtx;
+    lt_dev_pico device;
+    lt_ctx_trezor_crypto_t cryptoCtx;
     lt_handle_t handle;
     bool initialized;
 };

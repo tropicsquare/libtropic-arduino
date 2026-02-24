@@ -1,3 +1,4 @@
 [submodule "libtropic"]
 	path = libtropic
-	url = https://github.com/tropicsquare/libtropic.git
+	url = https://github.com/Caza20/libtropic.git
+	branch = feat/rpi-pico
