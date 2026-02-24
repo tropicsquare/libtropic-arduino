@@ -306,7 +306,7 @@ class Tropic01 {
 
     // mcounter
     lt_ret_t mcounterInit(const lt_mcounter_index_t index, const uint32_t value);
-    lt_ret_t mcounterGet(const lt_mcounter_index_t index, uint32_t *value);
+    lt_ret_t mcounterGet(const lt_mcounter_index_t index, uint32_t &value);
     lt_ret_t mcounterUpdate(const lt_mcounter_index_t index);
 
    private:
