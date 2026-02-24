@@ -360,30 +360,52 @@ String Tropic01::printChipID(lt_chip_id_t chip_id)
 }
 
 // bootloader version
-lt_ret_t Tropic01::getBootloaderVersion(uint8_t *fw_ver)
+lt_ret_t Tropic01::getBootloaderFWVersion(uint8_t *fw_ver)
 {
     lt_ret_t response = LT_OK;
+    lt_ret_t ret;
 
-    lt_ret_t ret = lt_reboot(&this->handle, TR01_MAINTENANCE_REBOOT);
+    // 1. Save current mode to be able to restore it later
+    lt_tr01_mode_t original_mode;
+    ret = lt_get_tr01_mode(&this->handle, &original_mode);
     if (ret != LT_OK) {
-        lt_deinit(&this->handle);
         return ret;
     }
 
+    // 2. Restart the device in maintenance mode to be able to read bootloader version
+    ret = lt_reboot(&this->handle, TR01_MAINTENANCE_REBOOT);
+    if (ret != LT_OK) {
+        return ret;
+    }
+
+    // 3. Confirm that the device is in maintenance mode
     lt_tr01_mode_t mode = LT_TR01_MAINTENANCE;
 
     ret = lt_get_tr01_mode(&this->handle, &mode);
     if (ret == LT_OK) {
         response = lt_get_info_riscv_fw_ver(&this->handle, fw_ver);
         if (response != LT_OK) {
-            lt_deinit(&this->handle);
             return response;
         }
     }
     else {
-        lt_deinit(&this->handle);
         return ret;
     }
+
+    // 4. Restore original mode (if it was application mode, reboot to application mode, if it was maintenance mode, reboot to maintenance mode)
+    lt_ret_t reboot_ret;
+
+    if (original_mode == LT_TR01_APPLICATION) {
+        reboot_ret = lt_reboot(&this->handle, TR01_REBOOT);
+    }
+    else if (original_mode == LT_TR01_MAINTENANCE) {
+        reboot_ret = lt_reboot(&this->handle, TR01_MAINTENANCE_REBOOT);
+    }
+    else {
+        reboot_ret = LT_FAIL;
+    }
+
+
 
     return response;
 }

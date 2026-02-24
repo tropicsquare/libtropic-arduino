@@ -16,13 +16,11 @@
 #include "libtropic.h"
 #include "libtropic_common.h"
 #include "pico/stdlib.h"
-#if defined(LT_CAL_MBEDTLS_V4)
+
 #include "libtropic/cal/mbedtls_v4/libtropic_mbedtls_v4.h"
-#elif defined(LT_CAL_TREZOR_CRYPTO)
-#include "libtropic/cal/trezor_crypto/libtropic_trezor_crypto.h"
-#else
+
 #include "libtropic.h"
-#endif
+
 
 #include "libtropic_trezor_crypto.h"
 extern "C" {
@@ -281,7 +279,7 @@ class Tropic01 {
     String printChipID(lt_chip_id_t chip_id);  // for print to uart
 
     // bootloader version
-    lt_ret_t getBootloaderVersion(uint8_t *fw_ver);
+    lt_ret_t getBootloaderFWVersion(uint8_t *fw_ver);
     String printBootloaderVersion(uint8_t *fw_ver);  // for print to uart
     String get_headers_v1();
     String header_boot_v1_0_1(uint8_t *data, lt_bank_id_t bank_id);
