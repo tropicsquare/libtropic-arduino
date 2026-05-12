@@ -144,7 +144,7 @@ class Tropic01 {
      * @param key[out]          Buffer for retrieving public key (32B for Ed25519, 64B for P256)
      * @param keyMaxSize[in]    Size of the key buffer
      * @param curve[out]        Type of elliptic curve public key (TR01_CURVE_ED25519 or TR01_CURVE_P256)
-     * @param origin[out]       Origin of the public key (TR01_CURVE_GENERATED or TR01_CURVE_STORED)
+     * @param origin[out]       Origin of the public key (TR01_KEY_GENERATED or TR01_KEY_STORED)
      *
      * @retval                  LT_OK Method executed successfully
      * @retval                  other Method did not execute successfully, you might use lt_ret_verbose() to get verbose
