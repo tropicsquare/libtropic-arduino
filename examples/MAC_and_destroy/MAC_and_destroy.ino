@@ -88,8 +88,8 @@ uint8_t myPin[4] = {1, 2, 3, 4};
 
 // Pairing Key macros for establishing a Secure Channel Session with TROPIC01.
 // Using the default Pairing Key slot 0 of Production TROPIC01 chips.
-#define PAIRING_KEY_PRIV sh0priv_prod0
-#define PAIRING_KEY_PUB sh0pub_prod0
+#define PAIRING_KEY_PRIV lt_sh0priv_prod0
+#define PAIRING_KEY_PUB lt_sh0pub_prod0
 #define PAIRING_KEY_SLOT TR01_PAIRING_KEY_SLOT_INDEX_0
 // -----------------------------------------------------------------------------------------------------
 
@@ -122,8 +122,8 @@ psa_status_t psaStatus;
 struct MacAndDestroyNVM {
     uint8_t attemptCount;                                              // Number of remaining attempts.
     uint8_t encryptedSecrets[MACANDD_ROUNDS * MY_MASTER_SECRET_SIZE];  // Encrypted master secrets (c_i).
-    uint8_t tag[32];                                                   // Verification tag (t).
-} __attribute__((packed));
+    uint8_t tag[PSA_HASH_LENGTH(PSA_ALG_SHA_256)];                     // Verification tag (t).
+} __attribute__((__packed__));
 // -----------------------------------------------------------------------------------------------------
 
 // ---------------------------------------- Local static functions -------------------------------------
@@ -147,7 +147,7 @@ static void cleanResourcesAndLoopForever(void)
 }
 
 // Helper function to print hex buffer.
-static void printHex(const char *label, const uint8_t *data, const size_t len)
+static void printHex(const char label[], const uint8_t data[], const size_t len)
 {
     Serial.print(label);
     Serial.print(": ");
@@ -169,7 +169,7 @@ static void printHex(const char *label, const uint8_t *data, const size_t len)
 
 // Simple XOR encryption/decryption.
 // This is an example dummy encryption, should be replaced with more secure encryption!
-static void xorCrypt(const uint8_t *input, const uint8_t *key, uint8_t *output, const size_t len)
+static void xorCrypt(const uint8_t input[], const uint8_t key[], uint8_t output[], const size_t len)
 {
     for (size_t i = 0; i < len; i++) {
         output[i] = input[i] ^ key[i];
@@ -177,8 +177,8 @@ static void xorCrypt(const uint8_t *input, const uint8_t *key, uint8_t *output, 
 }
 
 // HMAC-SHA256 wrapper using PSA Crypto.
-static psa_status_t hmacSha256(const uint8_t *key, const size_t keyLen, const uint8_t *data, const size_t dataLen,
-                               uint8_t *output)
+static psa_status_t hmacSha256(const uint8_t key[], const size_t keyLen, const uint8_t data[], const size_t dataLen,
+                               uint8_t output[])
 {
     psa_key_attributes_t attributes = PSA_KEY_ATTRIBUTES_INIT;
     psa_key_id_t keyId = 0;
@@ -218,7 +218,7 @@ cleanup:
  *
  * @return true on success, false otherwise
  */
-static bool pinSetup(const uint8_t *masterSecret, const uint8_t *pin, const uint8_t pinSize, uint8_t *finalKey)
+static bool pinSetup(const uint8_t masterSecret[], const uint8_t pin[], const uint8_t pinSize, uint8_t finalKey[])
 {
     if (!masterSecret || !pin || pinSize < PIN_SIZE_MIN || pinSize > PIN_SIZE_MAX || !finalKey) {
         Serial.println("  pinSetup(): Invalid parameters!");
@@ -367,7 +367,7 @@ static bool pinSetup(const uint8_t *masterSecret, const uint8_t *pin, const uint
  *
  * @return true on correct PIN, false otherwise
  */
-static bool pinVerify(const uint8_t *pin, const uint8_t pinSize, uint8_t *finalKey)
+static bool pinVerify(const uint8_t pin[], const uint8_t pinSize, uint8_t finalKey[])
 {
     if (!pin || pinSize < PIN_SIZE_MIN || pinSize > PIN_SIZE_MAX || !finalKey) {
         Serial.println("  pinVerify(): Invalid parameters!");
@@ -401,8 +401,6 @@ static bool pinVerify(const uint8_t *pin, const uint8_t pinSize, uint8_t *finalK
     Serial.println("    OK");
 
     // Check if attempts remaining.
-    Serial.print("  Attempts remaining: ");
-    Serial.println(nvm.attemptCount);
     if (nvm.attemptCount == 0) {
         Serial.println("  No attempts remaining!");
         return false;
@@ -410,6 +408,9 @@ static bool pinVerify(const uint8_t *pin, const uint8_t pinSize, uint8_t *finalK
 
     // Decrement attempt count.
     nvm.attemptCount--;
+
+    Serial.print("  Attempts remaining: ");
+    Serial.println(nvm.attemptCount);
 
     // Save decremented count immediately.
     Serial.println("  Updating attempt count...");
@@ -637,14 +638,16 @@ void loop()
     int wrongAttempts = MACANDD_ROUNDS - 1;
     Serial.print("Attempting ");
     Serial.print(wrongAttempts);
-    Serial.println(" wrong PIN entries...");
+    Serial.print(" wrong PIN entries (");
+    Serial.print(MACANDD_ROUNDS);
+    Serial.println(" attempts allowed)...");
     Serial.println();
 
     for (int i = 0; i < wrongAttempts; i++) {
         Serial.print("Attempt ");
         Serial.print(i + 1);
         Serial.print("/");
-        Serial.println(wrongAttempts);
+        Serial.println(MACANDD_ROUNDS);
 
         uint8_t finalKeyWrong[32];
         if (pinVerify(wrongPin, sizeof(wrongPin), finalKeyWrong)) {
