@@ -29,14 +29,14 @@ If this method fails, do the following (if you are running our examples, steps 1
     ```cpp
     // Pairing Key macros for establishing a Secure Channel Session with TROPIC01.
     // Using the default Pairing Key slot 0 of Production TROPIC01 chips.
-    #define PAIRING_KEY_PRIV sh0priv_prod0
-    #define PAIRING_KEY_PUB sh0pub_prod0
+    #define PAIRING_KEY_PRIV lt_sh0priv_prod0
+    #define PAIRING_KEY_PUB lt_sh0pub_prod0
     #define PAIRING_KEY_SLOT TR01_PAIRING_KEY_SLOT_INDEX_0
     ```
     To use engineering sample Pairing Keys, change the values of `PAIRING_KEY_PRIV` and `PAIRING_KEY_PUB` in the following way:
     ```cpp
-    #define PAIRING_KEY_PRIV sh0priv_eng_sample
-    #define PAIRING_KEY_PUB sh0pub_eng_sample
+    #define PAIRING_KEY_PRIV lt_sh0priv_eng_sample
+    #define PAIRING_KEY_PUB lt_sh0pub_eng_sample
     #define PAIRING_KEY_SLOT TR01_PAIRING_KEY_SLOT_INDEX_0
     ```
     If you are using custom Pairing Keys, create two arrays for them and adjust these macros accordingly. 
