@@ -46,8 +46,8 @@
 
 // Pairing Key macros for establishing a Secure Channel Session with TROPIC01.
 // Using the default Pairing Key slot 0 of Production TROPIC01 chips.
-#define PAIRING_KEY_PRIV sh0priv_prod0
-#define PAIRING_KEY_PUB sh0pub_prod0
+#define PAIRING_KEY_PRIV lt_sh0priv_prod0
+#define PAIRING_KEY_PUB lt_sh0pub_prod0
 #define PAIRING_KEY_SLOT TR01_PAIRING_KEY_SLOT_INDEX_0
 
 // ECC Key slot definition.
@@ -74,8 +74,11 @@ Tropic01 tropic01(TROPIC01_CS_PIN
 lt_ret_t returnVal;  // Used for return values of Tropic01's methods.
 
 // Message to sign.
-const char message[] = "Hello TROPIC01! This message will be signed with ECDSA P-256.";
-const uint32_t messageLen = sizeof(message) - 1;  // Exclude null terminator.
+const char message[] = "Hello TROPIC01! Hash of this message will be signed using ECDSA P-256.";
+const size_t messageLen = sizeof(message) - 1;  // Exclude null terminator.
+// SHA-256 hash of the message to sign (TROPIC01 requires 32B hash of the message).
+uint8_t messageHash[PSA_HASH_LENGTH(PSA_ALG_SHA_256)];
+size_t messageHashLen = 0;
 
 // Buffers for P-256 operations.
 uint8_t p256PubKey[TR01_CURVE_P256_PUBKEY_LEN];
@@ -87,7 +90,7 @@ lt_ecc_key_origin_t keyOrigin;
 // -----------------------------------------------------------------------------------------------------
 
 // ------------------------------------------ Other variables ------------------------------------------
-// Used when initializing MbedTLS's PSA Crypto.
+// Used when initializing MbedTLS's PSA Crypto and calculating SHA-256.
 psa_status_t psaStatus;
 // -----------------------------------------------------------------------------------------------------
 
@@ -112,7 +115,7 @@ static void cleanResourcesAndLoopForever(void)
 }
 
 // Helper function to print hex buffer.
-static void printHex(const char *label, const uint8_t *data, const size_t len)
+static void printHex(const char label[], const uint8_t data[], const size_t len)
 {
     Serial.print(label);
     Serial.print(": ");
@@ -128,15 +131,12 @@ static void printHex(const char *label, const uint8_t *data, const size_t len)
 }
 
 // Verify ECDSA signature using MbedTLS PSA Crypto.
-static bool verifyECDSA(const uint8_t *pubKey, const uint8_t *message, const size_t messageLen,
-                        const uint8_t *signature)
+static bool verifyECDSA(const uint8_t pubKey[], const uint8_t hash[], const size_t hashLen, const uint8_t signature[])
 {
     psa_key_attributes_t attributes = PSA_KEY_ATTRIBUTES_INIT;
     psa_key_id_t keyId = 0;
     psa_status_t status;
     bool result = false;
-    uint8_t hash[32];  // SHA-256 hash
-    size_t hashLen;
 
     // P-256 public key needs to be in uncompressed format (0x04 prefix + X + Y).
     uint8_t uncompressedPubKey[65];
@@ -154,15 +154,7 @@ static bool verifyECDSA(const uint8_t *pubKey, const uint8_t *message, const siz
     if (status != PSA_SUCCESS) {
         Serial.print("  Failed to import P-256 public key, psa_status_t=");
         Serial.println(status);
-        goto verifyECDSACleanup;
-    }
-
-    // Hash the message with SHA-256.
-    status = psa_hash_compute(PSA_ALG_SHA_256, message, messageLen, hash, sizeof(hash), &hashLen);
-    if (status != PSA_SUCCESS) {
-        Serial.print("  Failed to hash message, psa_status_t=");
-        Serial.println(status);
-        goto verifyECDSACleanup;
+        goto cleanup;
     }
 
     // Verify signature.
@@ -172,11 +164,11 @@ static bool verifyECDSA(const uint8_t *pubKey, const uint8_t *message, const siz
         result = true;
     }
     else {
-        Serial.print("  ECDSA verification failed, psa_status_t=");
+        Serial.print("  ECDSA signature verification failed, psa_status_t=");
         Serial.println(status);
     }
 
-verifyECDSACleanup:
+cleanup:
     if (keyId != 0) {
         psa_destroy_key(keyId);
     }
@@ -277,7 +269,7 @@ void loop()
     Serial.print("  Curve type: ");
     Serial.println(curveType == TR01_CURVE_P256 ? "P-256" : "Unknown");
     Serial.print("  Key origin: ");
-    Serial.println(keyOrigin == TR01_CURVE_GENERATED ? "Generated" : "Stored");
+    Serial.println(keyOrigin == TR01_KEY_GENERATED ? "Generated" : "Stored");
     printHex("  Public key", p256PubKey, sizeof(p256PubKey));
 
     // Display message to sign.
@@ -290,9 +282,22 @@ void loop()
     Serial.println(" bytes");
     Serial.println();
 
-    // Sign message with the P-256 key.
-    Serial.println("Signing message with P-256 key (ECDSA with SHA-256)...");
-    returnVal = tropic01.ecdsaSign(ECC_SLOT_P256, (const uint8_t *)message, messageLen, p256Signature);
+    // Hash the message to sign (TROPIC01 requires 32B hash of the message).
+    psaStatus = psa_hash_compute(PSA_ALG_SHA_256, (const uint8_t *)message, messageLen, messageHash,
+                                 sizeof(messageHash), &messageHashLen);
+    if (psaStatus != PSA_SUCCESS) {
+        Serial.print("  Failed to hash message, psa_status_t=");
+        Serial.println(psaStatus);
+        returnVal = tropic01.eccKeyErase(ECC_SLOT_P256);
+        if (returnVal != LT_OK) {
+            printLibtropicError("  Additionally, failed to erase the P-256 key slot, returnVal=", returnVal);
+        }
+        cleanResourcesAndLoopForever();
+    }
+
+    // Sign hash of the message with the P-256 key.
+    Serial.println("Signing SHA-256 hash of the message using ECDSA on TROPIC01...");
+    returnVal = tropic01.ecdsaSign(ECC_SLOT_P256, (const uint8_t *)messageHash, messageHashLen, p256Signature);
     if (returnVal != LT_OK) {
         printLibtropicError("  Tropic01.ecdsaSign() failed, returnVal=", returnVal);
         returnVal = tropic01.eccKeyErase(ECC_SLOT_P256);
@@ -304,12 +309,12 @@ void loop()
     printHex("  Signature", p256Signature, sizeof(p256Signature));
 
     // Verify the P-256 signature.
-    Serial.println("Verifying P-256 signature on host...");
-    if (verifyECDSA(p256PubKey, (const uint8_t *)message, messageLen, p256Signature)) {
-        Serial.println("  P-256 signature verification PASSED!");
+    Serial.println("Verifying ECDSA signature on host...");
+    if (verifyECDSA(p256PubKey, (const uint8_t *)messageHash, messageHashLen, p256Signature)) {
+        Serial.println("  ECDSA signature verification PASSED!");
     }
     else {
-        Serial.println("  P-256 signature verification FAILED!");
+        Serial.println("  ECDSA signature verification FAILED!");
         returnVal = tropic01.eccKeyErase(ECC_SLOT_P256);
         if (returnVal != LT_OK) {
             printLibtropicError("  Additionally, failed to erase the P-256 key slot, returnVal=", returnVal);
