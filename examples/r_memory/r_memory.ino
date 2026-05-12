@@ -46,8 +46,8 @@
 
 // Pairing Key macros for establishing a Secure Channel Session with TROPIC01.
 // Using the default Pairing Key slot 0 of Production TROPIC01 chips.
-#define PAIRING_KEY_PRIV sh0priv_prod0
-#define PAIRING_KEY_PUB sh0pub_prod0
+#define PAIRING_KEY_PRIV lt_sh0priv_prod0
+#define PAIRING_KEY_PUB lt_sh0pub_prod0
 #define PAIRING_KEY_SLOT TR01_PAIRING_KEY_SLOT_INDEX_0
 
 // R Memory slot definitions - using different slots for different data types.
@@ -105,7 +105,7 @@ static void cleanResourcesAndLoopForever(void)
 }
 
 // Helper function to print hex buffer.
-static void printHex(const char *label, const uint8_t *data, const size_t len)
+static void printHex(const char label[], const uint8_t data[], const size_t len)
 {
     Serial.print(label);
     Serial.print(": ");
@@ -122,7 +122,7 @@ static void printHex(const char *label, const uint8_t *data, const size_t len)
 }
 
 // Helper function to compare buffers.
-static bool compareBuffers(const uint8_t *buf1, const uint8_t *buf2, const size_t len)
+static bool compareBuffers(const uint8_t buf1[], const uint8_t buf2[], const size_t len)
 {
     for (size_t i = 0; i < len; i++) {
         if (buf1[i] != buf2[i]) {
