@@ -35,13 +35,14 @@
 // MbedTLS's PSA Crypto library.
 #include "psa/crypto.h"
 
-// -------------------------------------- TROPIC01 related macros --------------------------------------
+// ------------------------------------ TROPIC01 related macros --------------------------------------
 // GPIO pin definitions.
-#define TROPIC01_CS_PIN 5  // Platform's pin number where TROPIC01's SPI Chip Select pin is connected.
+// Platform's pin number where TROPIC01's SPI Chip Select pin is connected.
+#define TROPIC01_CS_PIN 5
 #if LT_USE_INT_PIN
-#define TROPIC01_INT_PIN \
-    4  // Platform's pin number where TROPIC01's interrupt pin is connected.
-       // Is necessary only when -DLT_USE_INT_PIN=1 was set in build_flags.
+// Platform's pin number where TROPIC01's interrupt pin is connected.
+// Is necessary only when -DLT_USE_INT_PIN=1 was set in build_flags.
+#define TROPIC01_INT_PIN 4
 #endif
 
 // Pairing Key macros for establishing a Secure Channel Session with TROPIC01.
@@ -52,14 +53,20 @@
 
 // ECC Key slot definition.
 #define ECC_SLOT_P256 TR01_ECC_SLOT_1  // Slot for P-256 key
-// -----------------------------------------------------------------------------------------------------
+// ----------------------------------------------------------------------------------------------------
 
-// ------------------------------------ TROPIC01 related variables -------------------------------------
+// ------------------------------------ TROPIC01 related variables ------------------------------------
 #if LT_SEPARATE_L3_BUFF
 // User's own buffer for L3 Layer data.
 uint8_t l3_buffer[LT_SIZE_OF_L3_BUFF] __attribute__((aligned(16))) = {0};
 #endif
 
+// TROPIC01 instance.
+// Because Tropic01 constructor has different number of parameters depending on the used Libtropic
+// CMake options, we are wrapping its call with the directives, so this example is functional with
+// every supported Libtropic CMake option without making any changes to it.
+// This is of course not necessary in your application, if you are not frequently changing the
+// Libtropic CMake options that affect the Tropic01 constructor parameters.
 Tropic01 tropic01(TROPIC01_CS_PIN
 #if LT_USE_INT_PIN
                   ,
@@ -69,9 +76,10 @@ Tropic01 tropic01(TROPIC01_CS_PIN
                   ,
                   l3_buffer, sizeof(l3_buffer)
 #endif
-);  // TROPIC01 instance.
+);
 
-lt_ret_t returnVal;  // Used for return values of Tropic01's methods.
+// Used for return values of Tropic01's methods.
+lt_ret_t returnVal;
 
 // Message to sign.
 const char message[] = "Hello TROPIC01! Hash of this message will be signed using ECDSA P-256.";
@@ -87,14 +95,14 @@ uint8_t p256Signature[TR01_ECDSA_EDDSA_SIGNATURE_LENGTH];
 // Variables for key info.
 lt_ecc_curve_type_t curveType;
 lt_ecc_key_origin_t keyOrigin;
-// -----------------------------------------------------------------------------------------------------
+// ----------------------------------------------------------------------------------------------------
 
-// ------------------------------------------ Other variables ------------------------------------------
+// ------------------------------------------ Other variables -----------------------------------------
 // Used when initializing MbedTLS's PSA Crypto and calculating SHA-256.
 psa_status_t psaStatus;
-// -----------------------------------------------------------------------------------------------------
+// ----------------------------------------------------------------------------------------------------
 
-// ---------------------------------------- Static local functions ------------------------------------------
+// -------------------------------------- Static local functions --------------------------------------
 // Helper function to save some source code lines when printing Libtropic errors using Serial.
 static void printLibtropicError(const char prefixMsg[], const lt_ret_t ret)
 {
@@ -120,7 +128,9 @@ static void printHex(const char label[], const uint8_t data[], const size_t len)
     Serial.print(label);
     Serial.print(": ");
     for (size_t i = 0; i < len; i++) {
-        if (data[i] < 0x10) Serial.print("0");
+        if (data[i] < 0x10) {
+            Serial.print("0");
+        }
         Serial.print(data[i], HEX);
         if ((i + 1) % 32 == 0 && (i + 1) < len) {
             Serial.println();
@@ -131,7 +141,8 @@ static void printHex(const char label[], const uint8_t data[], const size_t len)
 }
 
 // Verify ECDSA signature using MbedTLS PSA Crypto.
-static bool verifyECDSA(const uint8_t pubKey[], const uint8_t hash[], const size_t hashLen, const uint8_t signature[])
+static bool verifyECDSA(const uint8_t pubKey[], const uint8_t hash[], const size_t hashLen,
+                        const uint8_t signature[])
 {
     psa_key_attributes_t attributes = PSA_KEY_ATTRIBUTES_INIT;
     psa_key_id_t keyId = 0;
@@ -175,9 +186,9 @@ cleanup:
     psa_reset_key_attributes(&attributes);
     return result;
 }
-// -----------------------------------------------------------------------------------------------------
+// ----------------------------------------------------------------------------------------------------
 
-// ------------------------------------------ Setup function -------------------------------------------
+// ------------------------------------------ Setup function ------------------------------------------
 void setup()
 {
     // Initialize SPI (using the default SPI instance defined in <SPI.h>).
@@ -227,9 +238,9 @@ void setup()
     Serial.println();
     Serial.println("---------------------------- Loop -----------------------------");
 }
-// -----------------------------------------------------------------------------------------------------
+// ----------------------------------------------------------------------------------------------------
 
-// ------------------------------------------ Loop function --------------------------------------------
+// ------------------------------------------ Loop function -------------------------------------------
 void loop()
 {
     Serial.print("Will use P-256 key slot #");
@@ -257,12 +268,14 @@ void loop()
 
     // Read P-256 public key.
     Serial.println("Reading P-256 public key from the slot...");
-    returnVal = tropic01.eccKeyRead(ECC_SLOT_P256, p256PubKey, sizeof(p256PubKey), curveType, keyOrigin);
+    returnVal = tropic01.eccKeyRead(ECC_SLOT_P256, p256PubKey, sizeof(p256PubKey), curveType,
+                                    keyOrigin);
     if (returnVal != LT_OK) {
         printLibtropicError("  Tropic01.eccKeyRead() failed, returnVal=", returnVal);
         returnVal = tropic01.eccKeyErase(ECC_SLOT_P256);
         if (returnVal != LT_OK) {
-            printLibtropicError("  Additionally, failed to erase the P-256 key slot, returnVal=", returnVal);
+            printLibtropicError("  Additionally, failed to erase the P-256 key slot, returnVal=",
+                                returnVal);
         }
         cleanResourcesAndLoopForever();
     }
@@ -290,19 +303,22 @@ void loop()
         Serial.println(psaStatus);
         returnVal = tropic01.eccKeyErase(ECC_SLOT_P256);
         if (returnVal != LT_OK) {
-            printLibtropicError("  Additionally, failed to erase the P-256 key slot, returnVal=", returnVal);
+            printLibtropicError("  Additionally, failed to erase the P-256 key slot, returnVal=",
+                                returnVal);
         }
         cleanResourcesAndLoopForever();
     }
 
     // Sign hash of the message with the P-256 key.
     Serial.println("Signing SHA-256 hash of the message using ECDSA on TROPIC01...");
-    returnVal = tropic01.ecdsaSign(ECC_SLOT_P256, (const uint8_t *)messageHash, messageHashLen, p256Signature);
+    returnVal = tropic01.ecdsaSign(ECC_SLOT_P256, (const uint8_t *)messageHash, messageHashLen,
+                                   p256Signature);
     if (returnVal != LT_OK) {
         printLibtropicError("  Tropic01.ecdsaSign() failed, returnVal=", returnVal);
         returnVal = tropic01.eccKeyErase(ECC_SLOT_P256);
         if (returnVal != LT_OK) {
-            printLibtropicError("  Additionally, failed to erase the P-256 key slot, returnVal=", returnVal);
+            printLibtropicError("  Additionally, failed to erase the P-256 key slot, returnVal=",
+                                returnVal);
         }
         cleanResourcesAndLoopForever();
     }
@@ -317,7 +333,8 @@ void loop()
         Serial.println("  ECDSA signature verification FAILED!");
         returnVal = tropic01.eccKeyErase(ECC_SLOT_P256);
         if (returnVal != LT_OK) {
-            printLibtropicError("  Additionally, failed to erase the P-256 key slot, returnVal=", returnVal);
+            printLibtropicError("  Additionally, failed to erase the P-256 key slot, returnVal=",
+                                returnVal);
         }
         cleanResourcesAndLoopForever();
     }
@@ -337,4 +354,4 @@ void loop()
     Serial.println("---------------------------------------------------------------");
     cleanResourcesAndLoopForever();
 }
-// -----------------------------------------------------------------------------------------------------
+// ----------------------------------------------------------------------------------------------------
