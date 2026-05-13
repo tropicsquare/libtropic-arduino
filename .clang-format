@@ -1,18 +1,47 @@
-# Tested with Ubuntu clang-format version 14.0.0-1ubuntu1.1
-
-BreakBeforeBinaryOperators: All
-
-ColumnLimit: 120
-
+# Language conformance: C11
+# Using Cpp as a language is ok here, since there is no separate C formatter.
+# It is common to use Cpp for C code formatting in clang-format.
+Language: Cpp
+Standard: Cpp11
 BasedOnStyle: Google
 
+# --- BRACE STYLE ---
+# "Functions... opening brace on new line" 
+# "if, for, while... opening brace on the same line" 
 BreakBeforeBraces: Stroustrup
 
+# --- INDENTATION & WIDTH ---
+ColumnLimit: 103
+
+# "You shall indent the code with 4 spaces" 
 IndentWidth: 4
+TabWidth: 4
+UseTab: Never
+ContinuationIndentWidth: 4
 
+# --- POINTERS ---
+# Google defaults to Left, but guidelines show Right (void *p) 
 PointerAlignment: Right
+DerivePointerAlignment: false
 
-# # Insert New line at EOF if missing
-#InsertNewlineAtEOF: true
-# # Set EOL to LF unconditionally
-#LineEnding: LF
+# --- SPECIFIC TROPIC SQUARE RULES ---
+# "You shall place braces around the single statement" 
+# Valid since Clang-Format 15
+InsertBraces: true
+
+# "You shall put spaces after... if, switch..." 
+SpaceBeforeParens: ControlStatements
+# "You shall not add spaces around (inside) parenthesized expressions" 
+SpacesInParentheses: false
+
+# "Space on each side of most binary and ternary operators" 
+# Note: "SpacesInBinaryOperators" is implicit in Google style, no key needed.
+SpaceBeforeAssignmentOperators: true
+
+# Misc Cleanup
+SortIncludes: true
+IndentCaseLabels: true
+# Keep operators at the end of the line
+BreakBeforeBinaryOperators: None
+# Make breaking at '=' very expensive so it forces breaks inside arguments instead
+PenaltyBreakAssignment: 100
