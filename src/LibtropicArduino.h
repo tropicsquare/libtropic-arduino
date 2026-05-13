@@ -32,7 +32,7 @@ class Tropic01 {
      * parameters only if LT_USE_INT_PIN=1)
      * @param[in] l3Buff       User-defined L3 buffer (is one of the parameters only if
      * LT_SEPARATE_L3_BUFF=1)
-     * @param[in] l3BuffLen    Length of `lf_buff` (is one of the parameters only if
+     * @param[in] l3BuffLen    Length of `l3Buff` (is one of the parameters only if
      * LT_SEPARATE_L3_BUFF=1)
      * @param[in] spi          Instance of `SPIClass` to use, defaults to default SPI instance set by
      * `<SPI.h>`
