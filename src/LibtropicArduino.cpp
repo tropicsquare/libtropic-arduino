@@ -77,7 +77,8 @@ lt_ret_t Tropic01::end(void)
     return ret_deinit;
 }
 
-lt_ret_t Tropic01::secureSessionStart(const uint8_t shiPriv[], const uint8_t shiPub[], const lt_pkey_index_t pkeyIndex)
+lt_ret_t Tropic01::secureSessionStart(const uint8_t shiPriv[], const uint8_t shiPub[],
+                                      const lt_pkey_index_t pkeyIndex)
 {
     return lt_verify_chip_and_start_secure_session(&this->handle, shiPriv, shiPub, pkeyIndex);
 }
@@ -94,7 +95,8 @@ lt_ret_t Tropic01::eccKeyGenerate(const lt_ecc_slot_t slot, const lt_ecc_curve_t
     return lt_ecc_key_generate(&this->handle, slot, curve);
 }
 
-lt_ret_t Tropic01::eccKeyStore(const lt_ecc_slot_t slot, const lt_ecc_curve_type_t curve, const uint8_t key[])
+lt_ret_t Tropic01::eccKeyStore(const lt_ecc_slot_t slot, const lt_ecc_curve_type_t curve,
+                               const uint8_t key[])
 {
     return lt_ecc_key_store(&this->handle, slot, curve, key);
 }
@@ -105,14 +107,19 @@ lt_ret_t Tropic01::eccKeyRead(const lt_ecc_slot_t slot, uint8_t key[], const uin
     return lt_ecc_key_read(&this->handle, slot, key, keyMaxSize, &curve, &origin);
 }
 
-lt_ret_t Tropic01::eccKeyErase(const lt_ecc_slot_t slot) { return lt_ecc_key_erase(&this->handle, slot); }
+lt_ret_t Tropic01::eccKeyErase(const lt_ecc_slot_t slot)
+{
+    return lt_ecc_key_erase(&this->handle, slot);
+}
 
-lt_ret_t Tropic01::ecdsaSign(const lt_ecc_slot_t slot, const uint8_t msg[], const uint32_t msgLen, uint8_t rs[])
+lt_ret_t Tropic01::ecdsaSign(const lt_ecc_slot_t slot, const uint8_t msg[], const uint32_t msgLen,
+                             uint8_t rs[])
 {
     return lt_ecc_ecdsa_sign(&this->handle, slot, msg, msgLen, rs);
 }
 
-lt_ret_t Tropic01::eddsaSign(const lt_ecc_slot_t slot, const uint8_t msg[], const uint16_t msgLen, uint8_t rs[])
+lt_ret_t Tropic01::eddsaSign(const lt_ecc_slot_t slot, const uint8_t msg[], const uint16_t msgLen,
+                             uint8_t rs[])
 {
     return lt_ecc_eddsa_sign(&this->handle, slot, msg, msgLen, rs);
 }
@@ -128,9 +135,13 @@ lt_ret_t Tropic01::rMemRead(const uint16_t udataSlot, uint8_t data[], const uint
     return lt_r_mem_data_read(&this->handle, udataSlot, data, dataMaxSize, &dataReadSize);
 }
 
-lt_ret_t Tropic01::rMemErase(const uint16_t udataSlot) { return lt_r_mem_data_erase(&this->handle, udataSlot); }
+lt_ret_t Tropic01::rMemErase(const uint16_t udataSlot)
+{
+    return lt_r_mem_data_erase(&this->handle, udataSlot);
+}
 
-lt_ret_t Tropic01::macAndDestroy(const lt_mac_and_destroy_slot_t slot, const uint8_t dataOut[], uint8_t dataIn[])
+lt_ret_t Tropic01::macAndDestroy(const lt_mac_and_destroy_slot_t slot, const uint8_t dataOut[],
+                                 uint8_t dataIn[])
 {
     return lt_mac_and_destroy(&this->handle, slot, dataOut, dataIn);
 }
