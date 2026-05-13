@@ -46,8 +46,8 @@
 
 // Pairing Key macros for establishing a Secure Channel Session with TROPIC01.
 // Using the default Pairing Key slot 0 of Production TROPIC01 chips.
-#define PAIRING_KEY_PRIV sh0priv_prod0
-#define PAIRING_KEY_PUB sh0pub_prod0
+#define PAIRING_KEY_PRIV lt_sh0priv_prod0
+#define PAIRING_KEY_PUB lt_sh0pub_prod0
 #define PAIRING_KEY_SLOT TR01_PAIRING_KEY_SLOT_INDEX_0
 
 // ECC Key slot definition.
@@ -75,7 +75,7 @@ lt_ret_t returnVal;  // Used for return values of Tropic01's methods.
 
 // Message to sign.
 const char message[] = "Hello TROPIC01! This message will be signed with EdDSA Ed25519.";
-const uint16_t messageLen = sizeof(message) - 1;  // Exclude null terminator
+const size_t messageLen = sizeof(message) - 1;  // Exclude null terminator
 
 // Buffers for Ed25519 operations.
 uint8_t ed25519PubKey[TR01_CURVE_ED25519_PUBKEY_LEN];
@@ -112,7 +112,7 @@ static void cleanResourcesAndLoopForever(void)
 }
 
 // Helper function to print hex buffer.
-static void printHex(const char *label, const uint8_t *data, size_t len)
+static void printHex(const char label[], const uint8_t data[], size_t len)
 {
     Serial.print(label);
     Serial.print(": ");
@@ -226,7 +226,7 @@ void loop()
     Serial.print("  Curve type: ");
     Serial.println(curveType == TR01_CURVE_ED25519 ? "Ed25519" : "Unknown");
     Serial.print("  Key origin: ");
-    Serial.println(keyOrigin == TR01_CURVE_GENERATED ? "Generated" : "Stored");
+    Serial.println(keyOrigin == TR01_KEY_GENERATED ? "Generated" : "Stored");
     printHex("  Public key", ed25519PubKey, sizeof(ed25519PubKey));
 
     // Display message to sign.
