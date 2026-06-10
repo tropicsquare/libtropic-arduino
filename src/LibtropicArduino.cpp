@@ -826,39 +826,23 @@ lt_ret_t Tropic01::getSpectFWVersion(uint8_t *fw_ver)
         return ret;
     }
 
-    // 2. Restart in Application Mode
+    // 2. Reboot in Application Mode
     ret = lt_reboot(&this->handle, TR01_REBOOT);
     if (ret != LT_OK) {
         return ret;
     }
 
-    // 3. Verify that the device is in application mode
-    lt_tr01_mode_t mode = LT_TR01_APPLICATION;
-
-    ret = lt_get_tr01_mode(&this->handle, &mode);
-    if (ret == LT_OK) {
-        return ret;
-    }
-    else {
-        return ret;
-    }
-
-    // 4. Read RISC-V application firmware version
+    // 3. Read RISC-V application firmware version
     ret = lt_get_info_spect_fw_ver(&this->handle, fw_ver);
     if (ret != LT_OK) {
         return ret;
     }
 
-    // 5. Restore original mode (if it was application mode, reboot to application mode, if it was maintenance mode, reboot to maintenance mode)
+    // 4. Restore original mode (if it was application mode, reboot to application mode, if it was maintenance mode, reboot to maintenance mode)
     if (original_mode == LT_TR01_APPLICATION) {
         lt_reboot(&this->handle, TR01_REBOOT);
     }
-    else if (original_mode == LT_TR01_MAINTENANCE) {
-        lt_reboot(&this->handle, TR01_MAINTENANCE_REBOOT);
-    }
-
-
-
+    
     return ret;
 }
 
