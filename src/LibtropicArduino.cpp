@@ -518,39 +518,6 @@ lt_ret_t Tropic01::getRandomValue(uint8_t rand_buf[], const uint16_t rand_len)
 
 //--------------
 
-lt_ret_t Tropic01::hashMessage(const uint8_t *message, const uint32_t message_len, uint8_t *hash)
-{
-    lt_ret_t ret;
-
-    ret = lt_sha256_init(&cryptoCtx);
-    if (ret != LT_OK) {
-        // lt_sha256_init failed, lt_ret_verbose(ret));
-        return ret;
-    }
-
-    ret = lt_sha256_start(&cryptoCtx);
-    if (ret != LT_OK) {
-        // lt_sha256_init failed, lt_ret_verbose(ret));
-        return ret;
-    }
-
-    ret = lt_sha256_update(&cryptoCtx, (uint8_t *)message, message_len);
-    if (ret != LT_OK) {
-        // lt_sha256_init failed, lt_ret_verbose(ret));
-        return ret;
-    }
-
-    ret = lt_sha256_finish(&cryptoCtx, hash);
-    if (ret != LT_OK) {
-        // lt_sha256_init failed, lt_ret_verbose(ret));
-        return ret;
-    }
-
-    return ret;
-}
-
-//--------------
-
 lt_ret_t Tropic01::mcounterInit(const lt_mcounter_index_t index, const uint32_t value)
 {
     lt_ret_t ret = lt_mcounter_init(&this->handle, (lt_mcounter_index_t)index, value);
