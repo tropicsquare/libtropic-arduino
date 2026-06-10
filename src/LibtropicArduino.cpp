@@ -511,17 +511,9 @@ lt_ret_t Tropic01::getSpectFWVersion(uint8_t *fw_ver)
 
 //---------------
 
-lt_ret_t Tropic01::getRandomValue(uint8_t *rand_buf, const uint16_t rand_len)
+lt_ret_t Tropic01::getRandomValue(uint8_t rand_buf[], const uint16_t rand_len)
 {
-    lt_ret_t ret;
-
-    ret = lt_random_value_get(&this->handle, rand_buf, rand_len);
-    if (LT_OK != ret) {
-        // lt_out__random_value_get failed, lt_ret_verbose(ret));
-        return ret;
-    }
-
-    return ret;
+    return lt_random_value_get(&this->handle, rand_buf, rand_len);
 }
 
 //--------------

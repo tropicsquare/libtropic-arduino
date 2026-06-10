@@ -293,7 +293,7 @@ class Tropic01 {
     lt_ret_t getSpectFWVersion(uint8_t *fw_ver);
 
     // random value
-    lt_ret_t getRandomValue(uint8_t *rand_buf, const uint16_t rand_len);
+    lt_ret_t getRandomValue(uint8_t rand_buf[], const uint16_t rand_len);
 
     // hash message
     lt_ret_t hashMessage(const uint8_t *message, const uint32_t message_len, uint8_t *hash);
