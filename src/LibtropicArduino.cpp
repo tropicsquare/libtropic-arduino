@@ -372,7 +372,7 @@ lt_ret_t Tropic01::getBootloaderFWVersion(uint8_t *fw_ver)
         return ret;
     }
 
-    // 2. Restart the device in maintenance mode to be able to read bootloader version
+    // 2. Reboot the device in maintenance mode to be able to read bootloader version
     ret = lt_reboot(&this->handle, TR01_MAINTENANCE_REBOOT);
     if (ret != LT_OK) {
         return ret;

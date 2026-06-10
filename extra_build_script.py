@@ -7,10 +7,6 @@ import platform
 
 Import("env", "projenv")
 
-# Ensure project compiles C++ with C++14 (affects PlatformIO compile, not the CMake subprocess)
-env.Append(CXXFLAGS=["-std=gnu++14"])
-projenv.Append(CXXFLAGS=["-std=gnu++14"])
-
 LIB_NAME_ON_DISK = "LibtropicArduino"
 BUILD_TARGET = "tropic"
 LIBTROPIC_DEFAULT_BUILD_FLAGS = [
@@ -108,7 +104,15 @@ cmake_args.extend(flags_for_libtropic)
 hal_cal_vars_build_dir.mkdir(parents=True, exist_ok=True)
 
 # Important: run the generator with the library root (not external_root) so top-level CMakeLists can write the JSON
-subprocess.check_call(["cmake", "-S", str(library_dir), "-B", str(hal_cal_vars_build_dir), cal_flag])
+hal_cmake_args = ["cmake", "-S", str(library_dir), "-B", str(hal_cal_vars_build_dir)]
+if cal_flag:
+    hal_cmake_args.append(cal_flag)
+# Pass other -D flags (e.g. LT_PLATFORM) so HAL/CAL selection is consistent
+for flag in flags_for_libtropic:
+    if flag == cal_flag:
+        continue
+    hal_cmake_args.append(flag)
+subprocess.check_call(hal_cmake_args)
 
 # Ensure the JSON was produced
 if not hal_cal_vars_json_path.is_file():
