@@ -291,7 +291,6 @@ class Tropic01 {
 
     // Riscv fw version
     lt_ret_t getSpectFWVersion(uint8_t *fw_ver);
-    String printSpectFWVersion(uint8_t *fw_ver);  // for print to uart
 
     // random value
     lt_ret_t getRandomValue(uint8_t *rand_buf, const uint16_t rand_len);
