@@ -932,11 +932,5 @@ lt_ret_t Tropic01::mcounterGet(const lt_mcounter_index_t index, uint32_t &value)
 
 lt_ret_t Tropic01::mcounterUpdate(const lt_mcounter_index_t index)
 {
-    lt_ret_t ret = lt_mcounter_update(&this->handle, (lt_mcounter_index_t)index);
-    if (ret != LT_OK) {
-        // return "ERR:ENCODE;";
-        return ret;
-    }
-
-    return ret;
+    return lt_mcounter_update(&this->handle, (lt_mcounter_index_t)index);
 }
