@@ -378,18 +378,10 @@ lt_ret_t Tropic01::getBootloaderFWVersion(uint8_t *fw_ver)
         return ret;
     }
 
-    // 3. Confirm that the device is in maintenance mode
-    lt_tr01_mode_t mode = LT_TR01_MAINTENANCE;
-
-    ret = lt_get_tr01_mode(&this->handle, &mode);
-    if (ret == LT_OK) {
-        response = lt_get_info_riscv_fw_ver(&this->handle, fw_ver);
-        if (response != LT_OK) {
-            return response;
-        }
-    }
-    else {
-        return ret;
+    // 3. Get info RISC-V FW version
+    response = lt_get_info_riscv_fw_ver(&this->handle, fw_ver);
+    if (response != LT_OK) {
+        return response;
     }
 
     // 4. Restore original mode (if it was application mode, reboot to application mode, if it was maintenance mode, reboot to maintenance mode)
