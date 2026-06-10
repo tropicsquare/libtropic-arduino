@@ -442,59 +442,6 @@ String Tropic01::header_boot_v2_0_1(uint8_t *data, lt_bank_id_t bank_id)
     return response;
 }
 
-//---------------
-
-lt_ret_t Tropic01::secureSessionON(const lt_pkey_index_t pkey_index, const uint8_t shipriv[], const uint8_t shipub[])
-{
-    lt_ret_t ret;
-
-    // Read certificate store
-    uint8_t cert_ese[TR01_L2_GET_INFO_REQ_CERT_SIZE_SINGLE] = {0};
-    uint8_t cert_xxxx[TR01_L2_GET_INFO_REQ_CERT_SIZE_SINGLE] = {0};
-    uint8_t cert_tr01[TR01_L2_GET_INFO_REQ_CERT_SIZE_SINGLE] = {0};
-    uint8_t cert_root[TR01_L2_GET_INFO_REQ_CERT_SIZE_SINGLE] = {0};
-
-    struct lt_cert_store_t cert_store
-        = {.certs = {cert_ese, cert_xxxx, cert_tr01, cert_root},
-           .buf_len = {TR01_L2_GET_INFO_REQ_CERT_SIZE_SINGLE, TR01_L2_GET_INFO_REQ_CERT_SIZE_SINGLE,
-                       TR01_L2_GET_INFO_REQ_CERT_SIZE_SINGLE, TR01_L2_GET_INFO_REQ_CERT_SIZE_SINGLE},
-           .cert_len = {0, 0, 0, 0}};
-
-    ret = lt_get_info_cert_store(&this->handle, &cert_store);
-    if (LT_OK != ret) {
-        // Failed to get Certificate Store , lt_ret_verbose(ret)
-        return ret;
-    }
-
-    // Extract STPub
-    uint8_t stpub[TR01_STPUB_LEN] = {0};
-    ret = lt_get_st_pub(&cert_store, stpub);
-    if (LT_OK != ret) {
-        // Failed to get stpub key, lt_ret_verbose(ret)
-        return ret;
-    }
-
-    ret = lt_session_start(&this->handle, stpub, pkey_index, shipriv, shipub);
-    if (ret != LT_OK) {
-        return ret;
-    }
-
-    return ret;
-}
-
-lt_ret_t Tropic01::secureSessionOFF(void)
-{
-    lt_ret_t ret;
-
-    // Aborting Secure Session
-    ret = lt_session_abort(&this->handle);
-    if (LT_OK != ret) {
-        // Failed to abort Secure Session, lt_ret_verbose(ret)
-        return ret;
-    }
-
-    return ret;
-}
 
 //---------------
 

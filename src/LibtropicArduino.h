@@ -286,10 +286,6 @@ class Tropic01 {
     String get_headers_v2();
     String header_boot_v2_0_1(uint8_t *data, lt_bank_id_t bank_id);
 
-    // secure session
-    lt_ret_t secureSessionON(const lt_pkey_index_t pkey_index, const uint8_t shipriv[], const uint8_t shipub[]);
-    lt_ret_t secureSessionOFF(void);
-
     // Riscv fw version
     lt_ret_t getRiscvFWVersion(uint8_t *fw_ver);
     String printRiscvFWVersion(uint8_t *fw_ver);  // for print to uart
