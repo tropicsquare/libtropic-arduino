@@ -8,27 +8,26 @@
 
 #include "LibtropicArduino.h"
 
-Tropic01::Tropic01(
+Tropic01::Tropic01(const uint16_t spiCSPin
 #if LT_USE_INT_PIN
-    , const uint16_t intGpioPin
+                   ,
+                   const uint16_t intGpioPin
 #endif
 #if LT_SEPARATE_L3_BUFF
-    ,
-    uint8_t l3Buff[], const uint16_t l3BuffLen
+                   ,
+                   uint8_t l3Buff[], const uint16_t l3BuffLen
 #endif
-)
+                   ,
+                   SPIClass &spi, SPISettings spiSettings)
 {
     this->handle = {0};
     // Initialize device structure
-    this->device.cs_pin = SPI_CS_PIN;
+    this->device.spi_cs_pin = spiCSPin;
 #if LT_USE_INT_PIN
     this->device.int_gpio_pin = intGpioPin;
 #endif
-    this->device.pin_miso = SPI_MISO_PIN;
-    this->device.pin_mosi = SPI_MOSI_PIN;
-    this->device.pin_sck = SPI_SCK_PIN;
-    this->device.spi_baudrate = SPI_BAUDRATE;
-    this->device.spi_instance = LT_SPI_PORT;
+    this->device.spi_settings = spiSettings;
+    this->device.spi = &spi;
     // Pass device structure to handle
     this->handle.l2.device = &this->device;
 
