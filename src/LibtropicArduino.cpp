@@ -183,64 +183,10 @@ lt_ret_t Tropic01::getBootloaderFWVersion(uint8_t *fw_ver)
     return response;
 }
 
-String Tropic01::printBootloaderVersion(uint8_t *fw_ver)
+lt_ret_t Tropic01::printBootloaderVersion(uint8_t *fw_ver, const lt_bank_id_t bank_id,
+                            int (*print_func)(const char *format, ...))
 {
-    String response = "";
-
-    // Checking if bootloader version is 1.0.1
-    if (((fw_ver[3] & 0x7f) == 1) && (fw_ver[2] == 0) && (fw_ver[1] == 1) && (fw_ver[0] == 0)) {
-        char buff_2X[3];
-        sprintf(buff_2X, "%02X", fw_ver[3] & 0x7f);
-        String fw_ver_3 = String(buff_2X);
-        sprintf(buff_2X, "%02X", fw_ver[2]);
-        String fw_ver_2 = String(buff_2X);
-        sprintf(buff_2X, "%02X", fw_ver[1]);
-        String fw_ver_1 = String(buff_2X);
-        sprintf(buff_2X, "%02X", fw_ver[0]);
-        String fw_ver_0 = String(buff_2X);
-
-        response = "OK:Bootloader version = " + fw_ver_3 + "." + fw_ver_2 + "." + fw_ver_1 + " (+ ." + fw_ver_0 + ")";
-
-        response += get_headers_v1();
-    }
-    else {
-        // Checking if bootloader version is 2.0.1
-        if (((fw_ver[3] & 0x7f) == 2) && (fw_ver[2] == 0) && (fw_ver[1] == 1) && (fw_ver[0] == 0)) {
-            char buff_2X[3];
-            sprintf(buff_2X, "%02X", fw_ver[3] & 0x7f);
-            String fw_ver_3 = String(buff_2X);
-            sprintf(buff_2X, "%02X", fw_ver[2]);
-            String fw_ver_2 = String(buff_2X);
-            sprintf(buff_2X, "%02X", fw_ver[1]);
-            String fw_ver_1 = String(buff_2X);
-            sprintf(buff_2X, "%02X", fw_ver[0]);
-            String fw_ver_0 = String(buff_2X);
-
-            response
-                = "OK:Bootloader version = " + fw_ver_3 + "." + fw_ver_2 + "." + fw_ver_1 + " (+ ." + fw_ver_0 + ")";
-
-            response += get_headers_v2();
-        }
-        else {
-            char buff_2X[3];
-            sprintf(buff_2X, "%02X", fw_ver[3] & 0x7f);
-            String fw_ver_3 = String(buff_2X);
-            sprintf(buff_2X, "%02X", fw_ver[2]);
-            String fw_ver_2 = String(buff_2X);
-            sprintf(buff_2X, "%02X", fw_ver[1]);
-            String fw_ver_1 = String(buff_2X);
-            sprintf(buff_2X, "%02X", fw_ver[0]);
-            String fw_ver_0 = String(buff_2X);
-
-            response = "ERR:UNKNOWN_BOOTLOADER_VERSION=" + fw_ver_3 + "." + fw_ver_2 + "." + fw_ver_1 + " (+ ."
-                       + fw_ver_0 + ");\n";
-
-            lt_deinit(&this->handle);
-            return response;
-        }
-    }
-
-    return response;
+    return lt_print_fw_header(fw_ver, bank_id, print_func);
 }
 
 String Tropic01::get_headers_v1()

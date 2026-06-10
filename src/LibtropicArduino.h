@@ -276,11 +276,11 @@ class Tropic01 {
 
     // chip_id
     lt_ret_t getChipID(lt_chip_id_t &chipId);
-    String printChipID(lt_chip_id_t chip_id);  // for print to uart
+    lt_ret_t printChipID(lt_chip_id_t chip_id);  // for print to uart
 
     // bootloader version
     lt_ret_t getBootloaderFWVersion(uint8_t *fw_ver);
-    String printBootloaderVersion(uint8_t *fw_ver);  // for print to uart
+    lt_ret_t printBootloaderVersion(uint8_t *fw_ver);  // for print to uart
     String get_headers_v1();
     String header_boot_v1_0_1(uint8_t *data, lt_bank_id_t bank_id);
     String get_headers_v2();
