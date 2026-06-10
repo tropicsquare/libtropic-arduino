@@ -476,25 +476,6 @@ lt_ret_t Tropic01::getRiscvFWVersion(uint8_t *fw_ver)
     return ret;
 }
 
-String Tropic01::printRiscvFWVersion(uint8_t *fw_ver)
-{
-    String response = "";
-
-    char buff_2X[3];
-    sprintf(buff_2X, "%02X", fw_ver[3]);
-    String fw_ver_3 = String(buff_2X);
-    sprintf(buff_2X, "%02X", fw_ver[2]);
-    String fw_ver_2 = String(buff_2X);
-    sprintf(buff_2X, "%02X", fw_ver[1]);
-    String fw_ver_1 = String(buff_2X);
-    sprintf(buff_2X, "%02X", fw_ver[0]);
-    String fw_ver_0 = String(buff_2X);
-    response = "OK:RISC-V application FW version = " + fw_ver_3 + "." + fw_ver_2 + "." + fw_ver_1 + " (+ ."
-                + fw_ver_0 + "):";
-
-    return response;
-}
-
 //---------------
 
 lt_ret_t Tropic01::getSpectFWVersion(uint8_t *fw_ver)

@@ -288,7 +288,6 @@ class Tropic01 {
 
     // Riscv fw version
     lt_ret_t getRiscvFWVersion(uint8_t *fw_ver);
-    String printRiscvFWVersion(uint8_t *fw_ver);  // for print to uart
 
     // Riscv fw version
     lt_ret_t getSpectFWVersion(uint8_t *fw_ver);
