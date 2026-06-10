@@ -301,8 +301,8 @@ class Tropic01 {
     lt_ret_t mcounterUpdate(const lt_mcounter_index_t index);
 
    private:
-    lt_dev_pico device;
-    lt_ctx_trezor_crypto_t cryptoCtx;
+    lt_dev_arduino_t device;
+    lt_ctx_mbedtls_v4_t cryptoCtx;
     lt_handle_t handle;
     bool initialized;
 };
