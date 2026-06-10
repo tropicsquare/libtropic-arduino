@@ -390,14 +390,6 @@ lt_ret_t Tropic01::getBootloaderFWVersion(uint8_t *fw_ver)
     if (original_mode == LT_TR01_APPLICATION) {
         reboot_ret = lt_reboot(&this->handle, TR01_REBOOT);
     }
-    else if (original_mode == LT_TR01_MAINTENANCE) {
-        reboot_ret = lt_reboot(&this->handle, TR01_MAINTENANCE_REBOOT);
-    }
-    else {
-        reboot_ret = LT_FAIL;
-    }
-
-
 
     return response;
 }
