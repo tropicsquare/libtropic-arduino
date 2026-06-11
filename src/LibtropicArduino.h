@@ -58,17 +58,19 @@ class Tropic01 {
      * @param[in] spiSettings  SPI settings, defaults to tested values. If you want to change them, keep
      * `SPISettings.dataOrder=MSBFIRST` and `SPISettings.dataMode=SPI_MODE0` (required by TROPIC01).
      */
-    Tropic01(
+    Tropic01(const uint16_t spiCSPin
 #if LT_USE_INT_PIN
-        , const uint16_t intGpioPin
+             ,
+             const uint16_t intGpioPin
 #endif
 #if LT_SEPARATE_L3_BUFF
-        ,
-        uint8_t l3Buff[], const uint16_t l3BuffLen
+             ,
+             uint8_t l3Buff[], const uint16_t l3BuffLen
 #endif
-    );
+             ,
+             SPIClass &spi = ::SPI, SPISettings spiSettings = SPISettings(10000000, MSBFIRST, SPI_MODE0));
 
-    // Tropic01() = delete;
+    Tropic01() = delete;
     Tropic01(const Tropic01 &) = delete;
     Tropic01 &operator=(const Tropic01 &) = delete;
     Tropic01(Tropic01 &&) = delete;
