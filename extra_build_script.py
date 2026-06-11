@@ -104,15 +104,7 @@ cmake_args.extend(flags_for_libtropic)
 hal_cal_vars_build_dir.mkdir(parents=True, exist_ok=True)
 
 # Important: run the generator with the library root (not external_root) so top-level CMakeLists can write the JSON
-hal_cmake_args = ["cmake", "-S", str(library_dir), "-B", str(hal_cal_vars_build_dir)]
-if cal_flag:
-    hal_cmake_args.append(cal_flag)
-# Pass other -D flags (e.g. LT_PLATFORM) so HAL/CAL selection is consistent
-for flag in flags_for_libtropic:
-    if flag == cal_flag:
-        continue
-    hal_cmake_args.append(flag)
-subprocess.check_call(hal_cmake_args)
+subprocess.check_call(["cmake", "-S", str(library_dir), "-B", str(hal_cal_vars_build_dir), cal_flag])
 
 # Ensure the JSON was produced
 if not hal_cal_vars_json_path.is_file():
