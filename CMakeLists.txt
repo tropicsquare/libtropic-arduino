@@ -31,16 +31,7 @@ endfunction()
 add_subdirectory("libtropic/cal/${LT_CAL}")
 
 # Add the HAL directory.
-# Select the HAL implementation based on the target platform. LT_USE_RPI_PICO /
-# LT_PLATFORM are forwarded from PlatformIO (extra_build_script.py) as CMake
-# cache vars. Without this the Raspberry Pi Pico HAL (hal/rpi-pico) is never
-# picked up even when the project defines LT_USE_RPI_PICO, so its include dir is
-# missing from the generated JSON and the project build fails with:
-#   fatal error: libtropic_port_rpi_pico.h: No such file or directory
-add_subdirectory("libtropic/hal/rpi-pico")
-
 add_subdirectory("libtropic/hal/arduino")
-
 
 # Convert lists from the CMake variables into JSON lists
 list_to_json_array(LT_CAL_SRCS LT_CAL_SRCS_JSON)

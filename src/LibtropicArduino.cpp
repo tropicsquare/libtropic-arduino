@@ -185,6 +185,7 @@ lt_ret_t Tropic01::getBootloaderFWVersion(uint8_t *fw_ver)
 lt_ret_t Tropic01::printBootloaderVersion(uint8_t *fw_ver, const lt_bank_id_t bank_id,
                             int (*print_func)(const char *format, ...))
 {
+    (void)fw_ver;
     return lt_print_fw_header(fw_ver, bank_id, print_func);
 }
 
@@ -521,7 +522,6 @@ lt_ret_t Tropic01::mcounterInit(const lt_mcounter_index_t index, const uint32_t 
 {
     lt_ret_t ret = lt_mcounter_init(&this->handle, (lt_mcounter_index_t)index, value);
     if (ret != LT_OK) {
-        // return "ERR:ENCODE;";
         return ret;
     }
 

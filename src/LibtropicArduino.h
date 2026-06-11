@@ -15,11 +15,7 @@
 #include "libtropic_common.h"
 #include "libtropic_mbedtls_v4.h"
 
-#if LT_USE_ARDUINO
-        #include "libtropic_port_arduino.h"
-#elif LT_USE_RPI_PICO
-        #include "libtropic_port_rpi_pico.h"
-#endif
+#include "libtropic_port_arduino.h"
 
 /**
  * @brief Instance of this class is used to communicate with one TROPIC01 chip.
@@ -256,15 +252,15 @@ class Tropic01 {
     //************************** Additional functions for rpi-pico  *************************
     //************************************************************************************ */
 
-    lt_handle_t *getHandle();
+//     lt_handle_t *getHandle();
 
     // chip_id
     lt_ret_t getChipID(lt_chip_id_t &chipId);
-    lt_ret_t printChipID(lt_chip_id_t chip_id);  // for print to uart
+    lt_ret_t printChipID(const lt_chip_id_t &chip_id, int (*print_func)(const char *format, ...));  // for print to uart
 
     // bootloader version
     lt_ret_t getBootloaderFWVersion(uint8_t *fw_ver);
-    lt_ret_t printBootloaderVersion(uint8_t *fw_ver);  // for print to uart
+    lt_ret_t printBootloaderVersion(uint8_t *fw_ver, const lt_bank_id_t bank_id, int (*print_func)(const char *format, ...));  // for print to uart
     String get_headers_v1();
     String header_boot_v1_0_1(uint8_t *data, lt_bank_id_t bank_id);
     String get_headers_v2();
