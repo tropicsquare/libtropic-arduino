@@ -10,34 +10,11 @@
  */
 
 #include <Arduino.h>
-// #include <SPI.h>
-#include "hardware/gpio.h"
-#include "hardware/spi.h"
+#include <SPI.h>
 #include "libtropic.h"
 #include "libtropic_common.h"
-#include "pico/stdlib.h"
-
-#include "libtropic/cal/mbedtls_v4/libtropic_mbedtls_v4.h"
-
-#include "libtropic.h"
-
-
-#include "libtropic_trezor_crypto.h"
-extern "C" {
-#include "lt_sha256.h"  // to do the hash
-}
-
-#include "libtropic_port_rpi_pico.h"
-
-/* ---------------- SPI ---------------- */
-#define LT_SPI_PORT spi0
-#define SPI_BAUDRATE 1000000  // 1 MHz, can be adjusted according to the device
-
-// SPI pins (adjust them to your actual connection)
-#define SPI_SCK_PIN 2   // GPIO2 → SCK
-#define SPI_MOSI_PIN 3  // GPIO3 → MOSI - SDI
-#define SPI_MISO_PIN 4  // GPIO4 → MISO - SDO
-#define SPI_CS_PIN 5    // GPIO5 → Chip Select
+#include "libtropic_mbedtls_v4.h"
+#include "libtropic_port_arduino.h"
 
 /**
  * @brief Instance of this class is used to communicate with one TROPIC01 chip.
