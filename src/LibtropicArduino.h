@@ -14,7 +14,12 @@
 #include "libtropic.h"
 #include "libtropic_common.h"
 #include "libtropic_mbedtls_v4.h"
-#include "libtropic_port_arduino.h"
+
+#if LT_USE_ARDUINO
+        #include "libtropic_port_arduino.h"
+#elif LT_USE_RPI_PICO
+        #include "libtropic_port_rpi_pico.h"
+#endif
 
 /**
  * @brief Instance of this class is used to communicate with one TROPIC01 chip.
