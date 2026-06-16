@@ -236,8 +236,8 @@ lt_ret_t Tropic01::getRiscvFWVersion(uint8_t &fw_ver)
         return ret;
     }
 
-    // 4. Restore original mode (if it was application mode, reboot to application mode, if it was maintenance mode, reboot to maintenance mode)
-    if (original_mode == LT_TR01_APPLICATION) {
+    // 4. Reboot back is done only if the original mode was Maintenance
+    if (original_mode == LT_TR01_MAINTENANCE) {
         lt_reboot(&this->handle, TR01_REBOOT);
     }
 
