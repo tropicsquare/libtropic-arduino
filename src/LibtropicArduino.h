@@ -258,7 +258,7 @@ class Tropic01 {
 
     // bootloader version
     lt_ret_t getBootloaderFWVersion(uint8_t &fw_ver);
-    lt_ret_t printBootloaderVersion(uint8_t &fw_ver, int (*print_func)(const char *format, ...));  // for print to uart
+    lt_ret_t printBootloaderVersion();  // for print to uart
 
     // Riscv fw version
     lt_ret_t getRiscvFWVersion(uint8_t &fw_ver);

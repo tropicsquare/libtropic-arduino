@@ -179,13 +179,8 @@ lt_ret_t Tropic01::getBootloaderFWVersion(uint8_t &fw_ver)
     return ret;
 }
 
-lt_ret_t Tropic01::printBootloaderVersion(uint8_t &fw_ver, const lt_bank_id_t bank_id,
-                            int (*print_func)(const char *format, ...))
+lt_ret_t Tropic01::printBootloaderVersion()
 {
-    // lt_print_fw_header reads the header from the chip itself via the handle (the core API
-    // changed: it no longer takes a pre-read fw_ver buffer as the first argument).
-    (void)fw_ver;
-
     // 1. Save current mode to be able to restore it later
     lt_tr01_mode_t original_mode;
     lt_ret_t ret;
