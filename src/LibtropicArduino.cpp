@@ -160,9 +160,11 @@ lt_ret_t Tropic01::getBootloaderFWVersion(uint8_t &fw_ver)
     }
 
     // 2. Reboot the device in maintenance mode to be able to read bootloader version
-    ret = lt_reboot(&this->handle, TR01_MAINTENANCE_REBOOT);
-    if (ret != LT_OK) {
-        return ret;
+    if (original_mode != LT_TR01_MAINTENANCE) {
+        ret = lt_reboot(&this->handle, TR01_MAINTENANCE_REBOOT);
+        if (ret != LT_OK) {
+            return ret;
+        }
     }
 
     // 3. Get info RISC-V FW version
@@ -190,9 +192,11 @@ lt_ret_t Tropic01::printBootloaderVersion(int (*print_func)(const char *format, 
     }
 
     // 2. Reboot the device in maintenance mode to be able to read bootloader version
-    ret = lt_reboot(&this->handle, TR01_MAINTENANCE_REBOOT);
-    if (ret != LT_OK) {
-        return ret;
+    if (original_mode != LT_TR01_MAINTENANCE) {
+        ret = lt_reboot(&this->handle, TR01_MAINTENANCE_REBOOT);
+        if (ret != LT_OK) {
+            return ret;
+        }
     }
 
     // 3. Print bootloader version using lt_print_fw_header, which reads the header from the chip itself via the handle.
@@ -225,9 +229,11 @@ lt_ret_t Tropic01::getRiscvFWVersion(uint8_t &fw_ver)
     }
 
     // 2. Reboot in Application Mode
-    ret = lt_reboot(&this->handle, TR01_REBOOT);
-    if (ret != LT_OK) {
-        return ret;
+    if (original_mode == LT_TR01_MAINTENANCE) {
+        ret = lt_reboot(&this->handle, TR01_REBOOT);
+        if (ret != LT_OK) {
+            return ret;
+        }
     }
 
     // 3. Read RISC-V application firmware version
@@ -258,9 +264,11 @@ lt_ret_t Tropic01::getSpectFWVersion(uint8_t &fw_ver)
     }
 
     // 2. Reboot in Application Mode
-    ret = lt_reboot(&this->handle, TR01_REBOOT);
-    if (ret != LT_OK) {
-        return ret;
+    if (original_mode == LT_TR01_MAINTENANCE) {
+        ret = lt_reboot(&this->handle, TR01_REBOOT);
+        if (ret != LT_OK) {
+            return ret;
+        }
     }
 
     // 3. Read RISC-V application firmware version
