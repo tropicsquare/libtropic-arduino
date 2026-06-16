@@ -54,19 +54,8 @@ cc = env.get("CC")
 cxx = env.get("CXX")
 ar = env.get("AR")
 
-# libtropic vendors trezor_crypto sources (groestl.h, sha3.h, blake2_common.h,
-# byte_order.h, chacha_drbg.h, hash_to_curve.h, ...) that use uintXX_t / size_t
-# WITHOUT including <stdint.h> / <stddef.h>. They rely on those headers being
-# pulled in transitively, which does NOT happen on the bare-metal toolchain used
-# here (CMAKE_SYSTEM_NAME=Generic + nosys), so the build fails with
-# "unknown type name 'uint64_t'" / "unknown type name 'size_t'".
-# We force-include them, but ONLY here in libtropic's CMAKE_*_FLAGS, so the main
-# PlatformIO project build is untouched (passing -include via the global CCFLAGS
-# would leak into .S assembly compilation and break it with "bad instruction").
-force_include = "-include stdint.h -include stddef.h"
-
 # Get the compiler flags from the PlatformIO environment (may be empty)
-c_flags = (force_include + " " + (" ".join(env.get("CCFLAGS", [])) or "")).strip()
+c_flags = " ".join(env.get("CCFLAGS", [])) or ""
 # Ensure C++14 is passed to CMake's CXX flags
 cxx_flags = (c_flags + " -std=gnu++14").strip()
 
