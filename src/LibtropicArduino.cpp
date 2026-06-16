@@ -146,7 +146,7 @@ lt_ret_t Tropic01::printChipID(const lt_chip_id_t &chip_id, int (*print_func)(co
 }
 
 // print bootloader version into a buffer
-lt_ret_t Tropic01::getBootloaderFWVersion(uint8_t &fw_ver)
+lt_ret_t Tropic01::getBootloaderFWVersion(uint8_t *fw_ver)
 {
     lt_ret_t ret = LT_OK;
 
@@ -215,7 +215,7 @@ lt_ret_t Tropic01::printBootloaderVersion(int (*print_func)(const char *format, 
 
 //---------------
 
-lt_ret_t Tropic01::getRiscvFWVersion(uint8_t &fw_ver)
+lt_ret_t Tropic01::getRiscvFWVersion(uint8_t *fw_ver)
 {
     lt_ret_t ret = LT_OK;
 
@@ -250,7 +250,7 @@ lt_ret_t Tropic01::getRiscvFWVersion(uint8_t &fw_ver)
 
 //---------------
 
-lt_ret_t Tropic01::getSpectFWVersion(uint8_t &fw_ver)
+lt_ret_t Tropic01::getSpectFWVersion(uint8_t *fw_ver)
 {
     lt_ret_t ret = LT_OK;
 
