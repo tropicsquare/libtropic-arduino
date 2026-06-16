@@ -148,10 +148,9 @@ lt_ret_t Tropic01::printChipID(const lt_chip_id_t &chip_id, int (*print_func)(co
 }
 
 // bootloader version
-lt_ret_t Tropic01::getBootloaderFWVersion(uint8_t *fw_ver)
+lt_ret_t Tropic01::getBootloaderFWVersion(uint8_t &fw_ver)
 {
-    lt_ret_t response = LT_OK;
-    lt_ret_t ret;
+    lt_ret_t ret = LT_OK;
 
     // 1. Save current mode to be able to restore it later
     lt_tr01_mode_t original_mode;
@@ -167,10 +166,45 @@ lt_ret_t Tropic01::getBootloaderFWVersion(uint8_t *fw_ver)
     }
 
     // 3. Get info RISC-V FW version
-    response = lt_get_info_riscv_fw_ver(&this->handle, fw_ver);
-    if (response != LT_OK) {
-        return response;
+    ret = lt_get_info_riscv_fw_ver(&this->handle, fw_ver);
+    if (ret != LT_OK) {
+        return ret;
     }
+
+    // 4. Reboot back is done only if the original mode was Application
+    if (original_mode == LT_TR01_APPLICATION) {
+        ret = lt_reboot(&this->handle, TR01_REBOOT);
+    }
+
+    return ret;
+}
+
+lt_ret_t Tropic01::printBootloaderVersion(uint8_t &fw_ver, const lt_bank_id_t bank_id,
+                            int (*print_func)(const char *format, ...))
+{
+    // lt_print_fw_header reads the header from the chip itself via the handle (the core API
+    // changed: it no longer takes a pre-read fw_ver buffer as the first argument).
+    (void)fw_ver;
+
+    // 1. Save current mode to be able to restore it later
+    lt_tr01_mode_t original_mode;
+    lt_ret_t ret;
+    ret = lt_get_tr01_mode(&this->handle, &original_mode);
+    if (ret != LT_OK) {
+        return ret;
+    }
+
+    // 2. Reboot the device in maintenance mode to be able to read bootloader version
+    ret = lt_reboot(&this->handle, TR01_MAINTENANCE_REBOOT);
+    if (ret != LT_OK) {
+        return ret;
+    }
+
+    // 3. Print bootloader version using lt_print_fw_header, which reads the header from the chip itself via the handle.
+    lt_print_fw_header(&this->handle, TR01_FW_BANK_FW1, print_func);
+    lt_print_fw_header(&this->handle, TR01_FW_BANK_FW2, print_func);
+    lt_print_fw_header(&this->handle, TR01_FW_BANK_SPECT1, print_func);
+    lt_print_fw_header(&this->handle, TR01_FW_BANK_SPECT2, print_func);
 
     // 4. Restore original mode (if it was application mode, reboot to application mode, if it was maintenance mode, reboot to maintenance mode)
     lt_ret_t reboot_ret;
@@ -179,273 +213,12 @@ lt_ret_t Tropic01::getBootloaderFWVersion(uint8_t *fw_ver)
         reboot_ret = lt_reboot(&this->handle, TR01_REBOOT);
     }
 
-    return response;
+    return LT_OK;
 }
-
-lt_ret_t Tropic01::printBootloaderVersion(uint8_t *fw_ver, const lt_bank_id_t bank_id,
-                            int (*print_func)(const char *format, ...))
-{
-    (void)fw_ver;
-    return lt_print_fw_header(fw_ver, bank_id, print_func);
-}
-
-String Tropic01::get_headers_v1()
-{
-    String response = "";
-
-    uint8_t header[TR01_L2_GET_INFO_FW_HEADER_SIZE] = {0};
-    uint16_t header_read_size = 0;
-
-    // Read header from FW_BANK_FW1
-    if (lt_get_info_fw_bank(&this->handle, TR01_FW_BANK_FW1, header, sizeof(header), &header_read_size) == LT_OK) {
-        response = header_boot_v1_0_1(header, TR01_FW_BANK_FW1);
-    }
-    else {
-        response = "ERR:FAILED_TO_GET_FW_BANK1;\n";
-        return response;
-    }
-
-    // Read header from FW_BANK_FW2
-    memset(header, 0, sizeof(header));
-    if (lt_get_info_fw_bank(&this->handle, TR01_FW_BANK_FW2, header, sizeof(header), &header_read_size) == LT_OK) {
-        response += header_boot_v1_0_1(header, TR01_FW_BANK_FW2);
-    }
-    else {
-        response = "ERR:FAILED_TO_GET_FW_BANK2;\n";
-        return response;
-    }
-
-    // Read header from FW_BANK_SPECT1
-    memset(header, 0, sizeof(header));
-    if (lt_get_info_fw_bank(&this->handle, TR01_FW_BANK_SPECT1, header, sizeof(header), &header_read_size) == LT_OK) {
-        response += header_boot_v1_0_1(header, TR01_FW_BANK_SPECT1);
-    }
-    else {
-        response = "ERR:FAILED_TO_GET_SPECT_BANK1;\n";
-        return response;
-    }
-
-    // Read header from FW_BANK_SPECT2
-    memset(header, 0, sizeof(header));
-    if (lt_get_info_fw_bank(&this->handle, TR01_FW_BANK_SPECT2, header, sizeof(header), &header_read_size) == LT_OK) {
-        response += header_boot_v1_0_1(header, TR01_FW_BANK_SPECT2);
-    }
-    else {
-        response = "ERR:FAILED_TO_GET_SPECT_BANK2;\n";
-        return response;
-    }
-
-    return response;
-}
-
-String Tropic01::header_boot_v1_0_1(uint8_t *data, lt_bank_id_t bank_id)
-{
-    String response = "";
-
-    struct lt_header_boot_v1_t *p_h = (struct lt_header_boot_v1_t *)data;
-
-    switch (bank_id) {
-        case TR01_FW_BANK_FW1:
-            response = "Firmware bank 1 header=";
-            break;
-        case TR01_FW_BANK_FW2:
-            response = "Firmware bank 2 header=";
-            break;
-        case TR01_FW_BANK_SPECT1:
-            response = "SPECT bank 1 header=";
-            break;
-        case TR01_FW_BANK_SPECT2:
-            response = "SPECT bank 2 header=";
-            break;
-        default:
-            response = "Unknown bank ID=" + (int)bank_id;
-            return response;
-    }
-
-    char buff_2X[3];
-    sprintf(buff_2X, "%02X", p_h->type[3]);
-    String ph_type_3 = String(buff_2X);
-    sprintf(buff_2X, "%02X", p_h->type[2]);
-    String ph_type_2 = String(buff_2X);
-    sprintf(buff_2X, "%02X", p_h->type[1]);
-    String ph_type_1 = String(buff_2X);
-    sprintf(buff_2X, "%02X", p_h->type[0]);
-    String ph_type_0 = String(buff_2X);
-
-    response += "Type= " + ph_type_3 + ph_type_2 + ph_type_1 + ph_type_3 + ":";
-
-    sprintf(buff_2X, "%02X", p_h->version[3]);
-    String ph_version_3 = String(buff_2X);
-    sprintf(buff_2X, "%02X", p_h->version[2]);
-    String ph_version_2 = String(buff_2X);
-    sprintf(buff_2X, "%02X", p_h->version[1]);
-    String ph_version_1 = String(buff_2X);
-    sprintf(buff_2X, "%02X", p_h->version[0]);
-    String ph_version_0 = String(buff_2X);
-
-    response += "Version= " + ph_version_3 + ph_version_2 + ph_version_1 + ph_version_0 + ":";
-
-    sprintf(buff_2X, "%02X", p_h->size[3]);
-    String ph_size_3 = String(buff_2X);
-    sprintf(buff_2X, "%02X", p_h->size[2]);
-    String ph_size_2 = String(buff_2X);
-    sprintf(buff_2X, "%02X", p_h->size[1]);
-    String ph_size_1 = String(buff_2X);
-    sprintf(buff_2X, "%02X", p_h->size[0]);
-    String ph_size_0 = String(buff_2X);
-
-    response += "Size= " + ph_size_3 + ph_size_2 + ph_size_1 + ph_size_0 + ":";
-
-    sprintf(buff_2X, "%02X", p_h->git_hash[3]);
-    String ph_git_hash_3 = String(buff_2X);
-    sprintf(buff_2X, "%02X", p_h->git_hash[2]);
-    String ph_git_hash_2 = String(buff_2X);
-    sprintf(buff_2X, "%02X", p_h->git_hash[1]);
-    String ph_git_hash_1 = String(buff_2X);
-    sprintf(buff_2X, "%02X", p_h->git_hash[0]);
-    String ph_git_hash_0 = String(buff_2X);
-
-    response += "Git hash= " + ph_git_hash_3 + ph_git_hash_2 + ph_git_hash_1 + ph_git_hash_0 + ":";
-
-    sprintf(buff_2X, "%02X", p_h->hash[3]);
-    String ph_hash_3 = String(buff_2X);
-    sprintf(buff_2X, "%02X", p_h->hash[2]);
-    String ph_hash_2 = String(buff_2X);
-    sprintf(buff_2X, "%02X", p_h->hash[1]);
-    String ph_hash_1 = String(buff_2X);
-    sprintf(buff_2X, "%02X", p_h->hash[0]);
-    String ph_hash_0 = String(buff_2X);
-
-    response += "FW hash= " + ph_hash_3 + ph_hash_2 + ph_hash_1 + ph_hash_0 + ":";
-
-    return response;
-}
-
-// ----------------------------
-
-String Tropic01::get_headers_v2()
-{
-    String response = "";
-
-    uint8_t header[TR01_L2_GET_INFO_FW_HEADER_SIZE] = {0};
-    uint16_t header_read_size = 0;
-
-    // Read header from FW_BANK_FW1
-    if (lt_get_info_fw_bank(&this->handle, TR01_FW_BANK_FW1, header, sizeof(header), &header_read_size) == LT_OK) {
-        header_boot_v2_0_1(header, TR01_FW_BANK_FW1);
-    }
-    else {
-        response = "ERR:FAILED_TO_GET_FW_BANK_1;";
-        return response;
-    }
-
-    // Read header from FW_BANK_FW2
-    memset(header, 0, sizeof(header));
-    if (lt_get_info_fw_bank(&this->handle, TR01_FW_BANK_FW2, header, sizeof(header), &header_read_size) == LT_OK) {
-        header_boot_v2_0_1(header, TR01_FW_BANK_FW2);
-    }
-    else {
-        response = "ERR:FAILED_TO_GET_FW_BANK_2;";
-        return response;
-    }
-
-    // Read header from FW_BANK_SPECT1
-    memset(header, 0, sizeof(header));
-    if (lt_get_info_fw_bank(&this->handle, TR01_FW_BANK_SPECT1, header, sizeof(header), &header_read_size) == LT_OK) {
-        header_boot_v2_0_1(header, TR01_FW_BANK_SPECT1);
-    }
-    else {
-        response = "ERR:FAILED_TO_GET_SPECT_BANK_1;";
-        return response;
-    }
-
-    // Read header from FW_BANK_SPECT2
-    memset(header, 0, sizeof(header));
-    if (lt_get_info_fw_bank(&this->handle, TR01_FW_BANK_SPECT2, header, sizeof(header), &header_read_size) == LT_OK) {
-        header_boot_v2_0_1(header, TR01_FW_BANK_SPECT2);
-    }
-    else {
-        response = "ERR:FAILED_TO_GET_SPECT_BANK_2;";
-        return response;
-    }
-
-    return response;
-}
-
-// This function prints the header in the new format used in bootloader version 2.0.1
-String Tropic01::header_boot_v2_0_1(uint8_t *data, lt_bank_id_t bank_id)
-{
-    String response = "";
-
-    struct lt_header_boot_v2_t *p_h = (struct lt_header_boot_v2_t *)data;
-
-    switch (bank_id) {
-        case TR01_FW_BANK_FW1:
-            response = "Firmware bank 1 header=";
-            break;
-        case TR01_FW_BANK_FW2:
-            response = "Firmware bank 2 header=";
-            break;
-        case TR01_FW_BANK_SPECT1:
-            response = "SPECT bank 1 header=";
-            break;
-        case TR01_FW_BANK_SPECT2:
-            response = "SPECT bank 2 header=";
-            break;
-        default:
-            response = "Unknown bank ID " + String((int)bank_id) + ";";
-            return response;
-    }
-
-    char buff_4X[5];
-    sprintf(buff_4X, "%04X", p_h->type);
-    String ph_type = String(buff_4X);
-
-    response += "Type= " + ph_type + ":";
-
-    char buff_2X[3];
-    sprintf(buff_2X, "%02X", p_h->padding);
-    String ph_padding = String(buff_2X);
-
-    response += "Padding= " + ph_padding + ":";
-
-    sprintf(buff_2X, "%02X", p_h->header_version);
-    String ph_header_version = String(buff_2X);
-
-    response += "FW header version= " + ph_header_version + ":\n";
-
-    char buff_8X[9];
-    sprintf(buff_8X, "%08X", p_h->ver);
-    String ph_ver = String(buff_8X);
-
-    response += "Version= " + ph_ver + ":";
-
-    sprintf(buff_8X, "%08X", p_h->size);
-    String ph_size = String(buff_8X);
-
-    response += "Size= " + ph_size + ":";
-
-    sprintf(buff_8X, "%08X", p_h->git_hash);
-    String ph_git_hash = String(buff_8X);
-
-    response += "Git hash= " + ph_git_hash + ":";
-
-    // Hash str has 32B
-    char hash_str[32 * 2 + 1] = {0};
-    for (int i = 0; i < 32; i++) {
-        snprintf(hash_str + i * 2, sizeof(hash_str) - i * 2, "%02" PRIX8 "", p_h->hash[i]);
-    }
-
-    response += "Hash=" + String(hash_str) + ":";
-    response += "Pair version=" + String(p_h->pair_version) + ":";
-
-    return response;
-}
-
 
 //---------------
 
-lt_ret_t Tropic01::getRiscvFWVersion(uint8_t *fw_ver)
+lt_ret_t Tropic01::getRiscvFWVersion(uint8_t &fw_ver)
 {
     lt_ret_t ret = LT_OK;
 
@@ -478,7 +251,7 @@ lt_ret_t Tropic01::getRiscvFWVersion(uint8_t *fw_ver)
 
 //---------------
 
-lt_ret_t Tropic01::getSpectFWVersion(uint8_t *fw_ver)
+lt_ret_t Tropic01::getSpectFWVersion(uint8_t &fw_ver)
 {
     lt_ret_t ret = LT_OK;
 

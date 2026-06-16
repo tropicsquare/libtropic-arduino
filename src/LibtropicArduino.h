@@ -252,25 +252,19 @@ class Tropic01 {
     //************************** Additional functions for rpi-pico  *************************
     //************************************************************************************ */
 
-//     lt_handle_t *getHandle();
-
     // chip_id
     lt_ret_t getChipID(lt_chip_id_t &chipId);
     lt_ret_t printChipID(const lt_chip_id_t &chip_id, int (*print_func)(const char *format, ...));  // for print to uart
 
     // bootloader version
-    lt_ret_t getBootloaderFWVersion(uint8_t *fw_ver);
-    lt_ret_t printBootloaderVersion(uint8_t *fw_ver, const lt_bank_id_t bank_id, int (*print_func)(const char *format, ...));  // for print to uart
-    String get_headers_v1();
-    String header_boot_v1_0_1(uint8_t *data, lt_bank_id_t bank_id);
-    String get_headers_v2();
-    String header_boot_v2_0_1(uint8_t *data, lt_bank_id_t bank_id);
+    lt_ret_t getBootloaderFWVersion(uint8_t &fw_ver);
+    lt_ret_t printBootloaderVersion(uint8_t &fw_ver, int (*print_func)(const char *format, ...));  // for print to uart
 
     // Riscv fw version
-    lt_ret_t getRiscvFWVersion(uint8_t *fw_ver);
+    lt_ret_t getRiscvFWVersion(uint8_t &fw_ver);
 
     // Riscv fw version
-    lt_ret_t getSpectFWVersion(uint8_t *fw_ver);
+    lt_ret_t getSpectFWVersion(uint8_t &fw_ver);
 
     // random value
     lt_ret_t getRandomValue(uint8_t rand_buf[], const uint16_t rand_len);
