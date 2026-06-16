@@ -136,14 +136,16 @@ lt_ret_t Tropic01::macAndDestroy(const lt_mac_and_destroy_slot_t slot, const uin
     return lt_mac_and_destroy(&this->handle, slot, dataOut, dataIn);
 }
 
-// chip_id
-lt_ret_t Tropic01::getChipID(lt_chip_id_t &chipId) { return lt_get_info_chip_id(&this->handle, &chipId); }
+// print chip id into a buffer
+lt_ret_t Tropic01::getChipID(lt_chip_id_t &chipId) { 
+    return lt_get_info_chip_id(&this->handle, &chipId); 
+}
 
 lt_ret_t Tropic01::printChipID(const lt_chip_id_t &chip_id, int (*print_func)(const char *format, ...)) {
     return lt_print_chip_id(&chip_id, print_func);
 }
 
-// bootloader version
+// print bootloader version into a buffer
 lt_ret_t Tropic01::getBootloaderFWVersion(uint8_t &fw_ver)
 {
     lt_ret_t ret = LT_OK;
