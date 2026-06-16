@@ -136,10 +136,6 @@ lt_ret_t Tropic01::macAndDestroy(const lt_mac_and_destroy_slot_t slot, const uin
     return lt_mac_and_destroy(&this->handle, slot, dataOut, dataIn);
 }
 
-//************************************************************************************ */
-//************************** Additional functions for rpi-pico  *************************
-//************************************************************************************ */   
-
 // chip_id
 lt_ret_t Tropic01::getChipID(lt_chip_id_t &chipId) { return lt_get_info_chip_id(&this->handle, &chipId); }
 
@@ -296,12 +292,7 @@ lt_ret_t Tropic01::getRandomValue(uint8_t rand_buf[], const uint16_t rand_len)
 
 lt_ret_t Tropic01::mcounterInit(const lt_mcounter_index_t index, const uint32_t value)
 {
-    lt_ret_t ret = lt_mcounter_init(&this->handle, (lt_mcounter_index_t)index, value);
-    if (ret != LT_OK) {
-        return ret;
-    }
-
-    return ret;
+    return lt_mcounter_init(&this->handle, (lt_mcounter_index_t)index, value);
 }
 
 lt_ret_t Tropic01::mcounterGet(const lt_mcounter_index_t index, uint32_t &value)
