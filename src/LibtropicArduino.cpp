@@ -242,7 +242,7 @@ lt_ret_t Tropic01::getRiscvFWVersion(uint8_t fw_ver[])
 
     // 4. Reboot back is done only if the original mode was Maintenance
     if (original_mode == LT_TR01_MAINTENANCE) {
-        lt_reboot(&this->handle, TR01_REBOOT);
+        lt_reboot(&this->handle, TR01_MAINTENANCE_REBOOT);
     }
 
     return ret;
@@ -277,7 +277,7 @@ lt_ret_t Tropic01::getSpectFWVersion(uint8_t fw_ver[])
 
     // 4. Reboot back is done only if the original mode was Maintenance
     if (original_mode == LT_TR01_MAINTENANCE) {
-        lt_reboot(&this->handle, TR01_REBOOT);
+        lt_reboot(&this->handle, TR01_MAINTENANCE_REBOOT);
     }
     
     return ret;
