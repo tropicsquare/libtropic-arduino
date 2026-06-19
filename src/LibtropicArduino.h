@@ -248,11 +248,7 @@ class Tropic01 {
      */
     lt_ret_t macAndDestroy(const lt_mac_and_destroy_slot_t slot, const uint8_t dataOut[], uint8_t dataIn[]);
 
-    //************************************************************************************ */
-    //************************** Additional functions for rpi-pico  *************************
-    //************************************************************************************ */
-
-    // chip_id
+    // print chip id into a buffer
     lt_ret_t getChipID(lt_chip_id_t &chipId);
     lt_ret_t printChipID(const lt_chip_id_t &chip_id, int (*print_func)(const char *format, ...));  // for print to uart
 
