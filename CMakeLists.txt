@@ -30,7 +30,7 @@ endfunction()
 # Add the CAL directory
 add_subdirectory("libtropic/cal/${LT_CAL}")
 
-# Add the HAL directory.
+# Add the HAL directory
 add_subdirectory("libtropic/hal/arduino")
 
 # Convert lists from the CMake variables into JSON lists
