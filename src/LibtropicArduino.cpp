@@ -283,7 +283,7 @@ lt_ret_t Tropic01::getSpectFWVersion(uint8_t fw_ver[])
 
 //---------------
 
-lt_ret_t Tropic01::getRandomValue(uint8_t rand_buf[], const uint16_t rand_len)
+lt_ret_t Tropic01::randomValueGet(uint8_t rand_buf[], const uint16_t rand_len)
 {
     return lt_random_value_get(&this->handle, rand_buf, rand_len);
 }

@@ -337,7 +337,7 @@ class Tropic01 {
      * @retval               other Method did not execute successfully, you might use lt_ret_verbose() to get verbose
      * encoding of returned value
      */
-    lt_ret_t getRandomValue(uint8_t rand_buf[], const uint16_t rand_len);
+    lt_ret_t randomValueGet(uint8_t rand_buf[], const uint16_t rand_len);
 
     /**
      * @brief Initializes the monotonic counter of a given index with an initial value.
