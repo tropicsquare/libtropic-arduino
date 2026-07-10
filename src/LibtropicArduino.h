@@ -297,7 +297,7 @@ class Tropic01 {
      * @retval                other Method did not execute successfully, you might use lt_ret_verbose() to get verbose
      * encoding of returned value
      */
-    lt_ret_t printBootloaderVersion(int (*print_func)(const char *format, ...));
+    lt_ret_t printFWHeaders(int (*print_func)(const char *format, ...));
 
     /**
      * @brief Reads the RISC-V application firmware version from TROPIC01.

@@ -179,7 +179,7 @@ lt_ret_t Tropic01::getBootloaderFWVersion(uint8_t fw_ver[])
     return ret;
 }
 
-lt_ret_t Tropic01::printBootloaderVersion(int (*print_func)(const char *format, ...))
+lt_ret_t Tropic01::printFWHeaders(int (*print_func)(const char *format, ...))
 {
     // 1. Save current mode to be able to restore it later
     lt_tr01_mode_t original_mode;
