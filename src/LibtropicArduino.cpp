@@ -292,15 +292,15 @@ lt_ret_t Tropic01::randomValueGet(uint8_t rand_buf[], const uint16_t rand_len)
 
 lt_ret_t Tropic01::mcounterInit(const lt_mcounter_index_t index, const uint32_t value)
 {
-    return lt_mcounter_init(&this->handle, (lt_mcounter_index_t)index, value);
+    return lt_mcounter_init(&this->handle, index, value);
 }
 
 lt_ret_t Tropic01::mcounterGet(const lt_mcounter_index_t index, uint32_t &value)
 {
-    return lt_mcounter_get(&this->handle, (lt_mcounter_index_t)index, &value);
+    return lt_mcounter_get(&this->handle, index, &value);
 }
 
 lt_ret_t Tropic01::mcounterUpdate(const lt_mcounter_index_t index)
 {
-    return lt_mcounter_update(&this->handle, (lt_mcounter_index_t)index);
+    return lt_mcounter_update(&this->handle, index);
 }
