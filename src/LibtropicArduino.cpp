@@ -204,13 +204,11 @@ lt_ret_t Tropic01::printFWHeaders(int (*print_func)(const char *format, ...))
     lt_print_fw_header(&this->handle, TR01_FW_BANK_SPECT2, print_func);
 
     // 4. Restore original mode (if it was application mode, reboot to application mode, if it was maintenance mode, reboot to maintenance mode)
-    lt_ret_t reboot_ret;
-
     if (original_mode == LT_TR01_APPLICATION) {
-        reboot_ret = lt_reboot(&this->handle, TR01_REBOOT);
+        ret = lt_reboot(&this->handle, TR01_REBOOT);
     }
 
-    return LT_OK;
+    return ret;
 }
 
 //---------------
@@ -242,7 +240,7 @@ lt_ret_t Tropic01::getRiscvFWVersion(uint8_t fw_ver[])
 
     // 4. Reboot back is done only if the original mode was Maintenance
     if (original_mode == LT_TR01_MAINTENANCE) {
-        lt_reboot(&this->handle, TR01_MAINTENANCE_REBOOT);
+        ret = lt_reboot(&this->handle, TR01_MAINTENANCE_REBOOT);
     }
 
     return ret;
@@ -277,7 +275,7 @@ lt_ret_t Tropic01::getSpectFWVersion(uint8_t fw_ver[])
 
     // 4. Reboot back is done only if the original mode was Maintenance
     if (original_mode == LT_TR01_MAINTENANCE) {
-        lt_reboot(&this->handle, TR01_MAINTENANCE_REBOOT);
+        ret = lt_reboot(&this->handle, TR01_MAINTENANCE_REBOOT);
     }
     
     return ret;
