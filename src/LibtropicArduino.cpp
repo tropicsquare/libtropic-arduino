@@ -20,7 +20,7 @@ Tropic01::Tropic01(const uint16_t spiCSPin
                    ,
                    SPIClass &spi, SPISettings spiSettings)
 {
-    this->handle = {0};
+    this->handle = {};
     // Initialize device structure
     this->device.spi_cs_pin = spiCSPin;
 #if LT_USE_INT_PIN
