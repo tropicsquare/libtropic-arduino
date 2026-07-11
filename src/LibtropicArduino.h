@@ -318,7 +318,7 @@ class Tropic01 {
      * @details If the chip is in maintenance mode, it is temporarily rebooted into application mode to read the
      *          version and then rebooted back to maintenance mode.
      *
-     * @param fw_ver[out]  Buffer for the firmware version bytes (must be TR01_L2_GET_INFO_RISCV_FW_SIZE bytes, i.e. 4
+     * @param fw_ver[out]  Buffer for the firmware version bytes (must be TR01_L2_GET_INFO_SPECT_FW_SIZE bytes, i.e. 4
      * bytes)
      *
      * @retval             LT_OK Method executed successfully
