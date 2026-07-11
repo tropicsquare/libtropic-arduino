@@ -197,7 +197,7 @@ lt_ret_t Tropic01::printFWHeaders(int (*print_func)(const char *format, ...))
         }
     }
 
-    // 3. Print bootloader version using lt_print_fw_header, which reads the header from the chip itself via the handle.
+    // 3. Print firmware headers using lt_print_fw_header, which reads the header from the chip itself via the handle.
     lt_print_fw_header(&this->handle, TR01_FW_BANK_FW1, print_func);
     lt_print_fw_header(&this->handle, TR01_FW_BANK_FW2, print_func);
     lt_print_fw_header(&this->handle, TR01_FW_BANK_SPECT1, print_func);
