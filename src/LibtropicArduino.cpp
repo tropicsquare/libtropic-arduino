@@ -165,7 +165,7 @@ lt_ret_t Tropic01::getBootloaderFWVersion(uint8_t fw_ver[])
         }
     }
 
-    // 3. Get info RISC-V FW version
+    // 3. Read Bootloader FW version
     ret = lt_get_info_riscv_fw_ver(&this->handle, fw_ver);
     if (ret != LT_OK) {
         return ret;
