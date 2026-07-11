@@ -267,7 +267,7 @@ lt_ret_t Tropic01::getSpectFWVersion(uint8_t fw_ver[])
         }
     }
 
-    // 3. Read RISC-V application firmware version
+    // 3. Read SPECT firmware version
     ret = lt_get_info_spect_fw_ver(&this->handle, fw_ver);
     if (ret != LT_OK) {
         return ret;
