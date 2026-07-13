@@ -5,13 +5,39 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.9.0]
+
+### Added
+- Support for RP2040 and RP2350 (Raspberry Pi Pico) MCUs.
+- API: `getChipID`, `printChipID`, `getBootloaderFWVersion`, `getRiscvFWVersion`, `getSpectFWVersion`, `printFWHeaders`, `randomValueGet`, `mcounterInit`, `mcounterGet`, `mcounterUpdate`.
+
+## [0.8.0]
+
+### Changed
+- Bumped up Libtropic to release 4.0.0.
+- Synced examples with Libtropic 4.0.0.
+
+## [0.7.0]
+
+### Changed
+- bumped up Libtropic to release 3.2.1.
+
+## [0.6.0]
+
+### Changed
+- bumped up Libtropic to release 3.2.0.
+
+## [0.5.0]
+
+### Fixed
+- Stopped forcing C++14.
+- Paths for clang-format check in CI.
+
 ## [0.4.0]
 
 ### Added
 - bumped up Libtropic to release 3.1.0.
 - FAQ: section "`Tropic01.secureSessionStart()` fails"
-- Support for RP2040 and RP2350 (Raspberry Pi Pico) MCUs.
-- API: `getChipID`, `printChipID`, `getBootloaderFWVersion`, `getRiscvFWVersion`, `getSpectFWVersion`, `printFWHeaders`, `randomValueGet`, `mcounterInit`, `mcounterGet`, `mcounterUpdate`.
 
 ## [0.3.0]
 

@@ -20,7 +20,6 @@ Tropic01::Tropic01(const uint16_t spiCSPin
                    ,
                    SPIClass &spi, SPISettings spiSettings)
 {
-    this->handle = {};
     // Initialize device structure
     this->device.spi_cs_pin = spiCSPin;
 #if LT_USE_INT_PIN
@@ -78,7 +77,8 @@ lt_ret_t Tropic01::end(void)
     return ret_deinit;
 }
 
-lt_ret_t Tropic01::secureSessionStart(const uint8_t shiPriv[], const uint8_t shiPub[], const lt_pkey_index_t pkeyIndex)
+lt_ret_t Tropic01::secureSessionStart(const uint8_t shiPriv[], const uint8_t shiPub[],
+                                      const lt_pkey_index_t pkeyIndex)
 {
     return lt_verify_chip_and_start_secure_session(&this->handle, shiPriv, shiPub, pkeyIndex);
 }
@@ -95,7 +95,8 @@ lt_ret_t Tropic01::eccKeyGenerate(const lt_ecc_slot_t slot, const lt_ecc_curve_t
     return lt_ecc_key_generate(&this->handle, slot, curve);
 }
 
-lt_ret_t Tropic01::eccKeyStore(const lt_ecc_slot_t slot, const lt_ecc_curve_type_t curve, const uint8_t key[])
+lt_ret_t Tropic01::eccKeyStore(const lt_ecc_slot_t slot, const lt_ecc_curve_type_t curve,
+                               const uint8_t key[])
 {
     return lt_ecc_key_store(&this->handle, slot, curve, key);
 }
@@ -106,14 +107,19 @@ lt_ret_t Tropic01::eccKeyRead(const lt_ecc_slot_t slot, uint8_t key[], const uin
     return lt_ecc_key_read(&this->handle, slot, key, keyMaxSize, &curve, &origin);
 }
 
-lt_ret_t Tropic01::eccKeyErase(const lt_ecc_slot_t slot) { return lt_ecc_key_erase(&this->handle, slot); }
+lt_ret_t Tropic01::eccKeyErase(const lt_ecc_slot_t slot)
+{
+    return lt_ecc_key_erase(&this->handle, slot);
+}
 
-lt_ret_t Tropic01::ecdsaSign(const lt_ecc_slot_t slot, const uint8_t msg[], const uint32_t msgLen, uint8_t rs[])
+lt_ret_t Tropic01::ecdsaSign(const lt_ecc_slot_t slot, const uint8_t msg[], const uint32_t msgLen,
+                             uint8_t rs[])
 {
     return lt_ecc_ecdsa_sign(&this->handle, slot, msg, msgLen, rs);
 }
 
-lt_ret_t Tropic01::eddsaSign(const lt_ecc_slot_t slot, const uint8_t msg[], const uint16_t msgLen, uint8_t rs[])
+lt_ret_t Tropic01::eddsaSign(const lt_ecc_slot_t slot, const uint8_t msg[], const uint16_t msgLen,
+                             uint8_t rs[])
 {
     return lt_ecc_eddsa_sign(&this->handle, slot, msg, msgLen, rs);
 }
@@ -129,14 +135,21 @@ lt_ret_t Tropic01::rMemRead(const uint16_t udataSlot, uint8_t data[], const uint
     return lt_r_mem_data_read(&this->handle, udataSlot, data, dataMaxSize, &dataReadSize);
 }
 
-lt_ret_t Tropic01::rMemErase(const uint16_t udataSlot) { return lt_r_mem_data_erase(&this->handle, udataSlot); }
+lt_ret_t Tropic01::rMemErase(const uint16_t udataSlot)
+{
+    return lt_r_mem_data_erase(&this->handle, udataSlot);
+}
 
-lt_ret_t Tropic01::macAndDestroy(const lt_mac_and_destroy_slot_t slot, const uint8_t dataOut[], uint8_t dataIn[])
+lt_ret_t Tropic01::macAndDestroy(const lt_mac_and_destroy_slot_t slot, const uint8_t dataOut[],
+                                 uint8_t dataIn[])
 {
     return lt_mac_and_destroy(&this->handle, slot, dataOut, dataIn);
 }
 
-lt_ret_t Tropic01::getChipID(lt_chip_id_t &chipId) { return lt_get_info_chip_id(&this->handle, &chipId); }
+lt_ret_t Tropic01::getChipID(lt_chip_id_t &chipId)
+{
+    return lt_get_info_chip_id(&this->handle, &chipId);
+}
 
 lt_ret_t Tropic01::printChipID(const lt_chip_id_t &chip_id, int (*print_func)(const char *format, ...))
 {
@@ -194,14 +207,15 @@ lt_ret_t Tropic01::printFWHeaders(int (*print_func)(const char *format, ...))
         }
     }
 
-    // 3. Print firmware headers using lt_print_fw_header, which reads the header from the chip itself via the handle.
+    // 3. Print firmware headers using lt_print_fw_header, which reads the header from the chip itself
+    // via the handle.
     lt_print_fw_header(&this->handle, TR01_FW_BANK_FW1, print_func);
     lt_print_fw_header(&this->handle, TR01_FW_BANK_FW2, print_func);
     lt_print_fw_header(&this->handle, TR01_FW_BANK_SPECT1, print_func);
     lt_print_fw_header(&this->handle, TR01_FW_BANK_SPECT2, print_func);
 
-    // 4. Restore original mode (if it was application mode, reboot to application mode, if it was maintenance mode,
-    // reboot to maintenance mode)
+    // 4. Restore original mode (if it was application mode, reboot to application mode, if it was
+    // maintenance mode, reboot to maintenance mode)
     if (original_mode == LT_TR01_APPLICATION) {
         ret = lt_reboot(&this->handle, TR01_REBOOT);
     }
@@ -290,4 +304,7 @@ lt_ret_t Tropic01::mcounterGet(const lt_mcounter_index_t index, uint32_t &value)
     return lt_mcounter_get(&this->handle, index, &value);
 }
 
-lt_ret_t Tropic01::mcounterUpdate(const lt_mcounter_index_t index) { return lt_mcounter_update(&this->handle, index); }
+lt_ret_t Tropic01::mcounterUpdate(const lt_mcounter_index_t index)
+{
+    return lt_mcounter_update(&this->handle, index);
+}

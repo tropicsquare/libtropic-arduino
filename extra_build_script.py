@@ -7,10 +7,6 @@ import platform
 
 Import("env", "projenv")
 
-# Ensure project compiles C++ with C++14 (affects PlatformIO compile, not the CMake subprocess)
-env.Append(CXXFLAGS=["-std=gnu++14"])
-projenv.Append(CXXFLAGS=["-std=gnu++14"])
-
 LIB_NAME_ON_DISK = "LibtropicArduino"
 BUILD_TARGET = "tropic"
 LIBTROPIC_DEFAULT_BUILD_FLAGS = [

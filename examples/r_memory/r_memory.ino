@@ -35,31 +35,38 @@
 // MbedTLS's PSA Crypto library.
 #include "psa/crypto.h"
 
-// -------------------------------------- TROPIC01 related macros --------------------------------------
+// ------------------------------------ TROPIC01 related macros --------------------------------------
 // GPIO pin definitions.
-#define TROPIC01_CS_PIN 5  // Platform's pin number where TROPIC01's SPI Chip Select pin is connected.
+// Platform's pin number where TROPIC01's SPI Chip Select pin is connected.
+#define TROPIC01_CS_PIN 5
 #if LT_USE_INT_PIN
-#define TROPIC01_INT_PIN \
-    4  // Platform's pin number where TROPIC01's interrupt pin is connected.
-       // Is necessary only when -DLT_USE_INT_PIN=1 was set in build_flags.
+// Platform's pin number where TROPIC01's interrupt pin is connected.
+// Is necessary only when -DLT_USE_INT_PIN=1 was set in build_flags.
+#define TROPIC01_INT_PIN 4
 #endif
 
 // Pairing Key macros for establishing a Secure Channel Session with TROPIC01.
 // Using the default Pairing Key slot 0 of Production TROPIC01 chips.
-#define PAIRING_KEY_PRIV sh0priv_prod0
-#define PAIRING_KEY_PUB sh0pub_prod0
+#define PAIRING_KEY_PRIV lt_sh0priv_prod0
+#define PAIRING_KEY_PUB lt_sh0pub_prod0
 #define PAIRING_KEY_SLOT TR01_PAIRING_KEY_SLOT_INDEX_0
 
 // R Memory slot definitions - using different slots for different data types.
 #define R_MEM_SLOT_FOR_STRING 10  // Slot for string data
-// -----------------------------------------------------------------------------------------------------
+// ----------------------------------------------------------------------------------------------------
 
-// ------------------------------------ TROPIC01 related variables -------------------------------------
+// ------------------------------------ TROPIC01 related variables ------------------------------------
 #if LT_SEPARATE_L3_BUFF
 // User's own buffer for L3 Layer data.
 uint8_t l3_buffer[LT_SIZE_OF_L3_BUFF] __attribute__((aligned(16))) = {0};
 #endif
 
+// TROPIC01 instance.
+// Because Tropic01 constructor has different number of parameters depending on the used Libtropic
+// CMake options, we are wrapping its call with the directives, so this example is functional with
+// every supported Libtropic CMake option without making any changes to it.
+// This is of course not necessary in your application, if you are not frequently changing the
+// Libtropic CMake options that affect the Tropic01 constructor parameters.
 Tropic01 tropic01(TROPIC01_CS_PIN
 #if LT_USE_INT_PIN
                   ,
@@ -69,22 +76,23 @@ Tropic01 tropic01(TROPIC01_CS_PIN
                   ,
                   l3_buffer, sizeof(l3_buffer)
 #endif
-);  // TROPIC01 instance.
+);
 
-lt_ret_t returnVal;  // Used for return values of Tropic01's methods.
+// Used for return values of Tropic01's methods.
+lt_ret_t returnVal;
 
 // Buffers for R memory operations.
 uint8_t writeBuffer[256];
 uint8_t readBuffer[256];
 uint16_t bytesRead;
-// -----------------------------------------------------------------------------------------------------
+// ----------------------------------------------------------------------------------------------------
 
-// ------------------------------------------ Other variables ------------------------------------------
+// ------------------------------------------ Other variables -----------------------------------------
 // Used when initializing MbedTLS's PSA Crypto.
 psa_status_t psaStatus;
-// -----------------------------------------------------------------------------------------------------
+// ----------------------------------------------------------------------------------------------------
 
-// ---------------------------------------- Utility functions ------------------------------------------
+// -------------------------------------- Static local functions --------------------------------------
 // Helper function to save some source code lines when printing Libtropic errors using Serial.
 static void printLibtropicError(const char prefixMsg[], const lt_ret_t ret)
 {
@@ -105,14 +113,18 @@ static void cleanResourcesAndLoopForever(void)
 }
 
 // Helper function to print hex buffer.
-static void printHex(const char *label, const uint8_t *data, const size_t len)
+static void printHex(const char label[], const uint8_t data[], const size_t len)
 {
     Serial.print(label);
     Serial.print(": ");
     for (size_t i = 0; i < len; i++) {
-        if (data[i] < 0x10) Serial.print("0");
+        if (data[i] < 0x10) {
+            Serial.print("0");
+        }
         Serial.print(data[i], HEX);
-        if (i < len - 1) Serial.print(" ");
+        if (i < len - 1) {
+            Serial.print(" ");
+        }
         if ((i + 1) % 16 == 0 && (i + 1) < len) {
             Serial.println();
             Serial.print("  ");
@@ -122,7 +134,7 @@ static void printHex(const char *label, const uint8_t *data, const size_t len)
 }
 
 // Helper function to compare buffers.
-static bool compareBuffers(const uint8_t *buf1, const uint8_t *buf2, const size_t len)
+static bool compareBuffers(const uint8_t buf1[], const uint8_t buf2[], const size_t len)
 {
     for (size_t i = 0; i < len; i++) {
         if (buf1[i] != buf2[i]) {
@@ -131,9 +143,9 @@ static bool compareBuffers(const uint8_t *buf1, const uint8_t *buf2, const size_
     }
     return true;
 }
-// -----------------------------------------------------------------------------------------------------
+// ----------------------------------------------------------------------------------------------------
 
-// ------------------------------------------ Setup function -------------------------------------------
+// ------------------------------------------ Setup function ------------------------------------------
 void setup()
 {
     // Initialize SPI (using the default SPI instance defined in <SPI.h>).
@@ -183,9 +195,9 @@ void setup()
     Serial.println();
     Serial.println("---------------------------- Loop -----------------------------");
 }
-// -----------------------------------------------------------------------------------------------------
+// ----------------------------------------------------------------------------------------------------
 
-// ------------------------------------------ Loop function --------------------------------------------
+// ------------------------------------------ Loop function -------------------------------------------
 void loop()
 {
     // Prepare string data.
@@ -233,7 +245,8 @@ void loop()
         printLibtropicError("  Tropic01.rMemRead() failed, returnVal=", returnVal);
         returnVal = tropic01.rMemErase(R_MEM_SLOT_FOR_STRING);
         if (returnVal != LT_OK) {
-            printLibtropicError("  Additionally, failed to erase the R-Mem slot, returnVal=", returnVal);
+            printLibtropicError("  Additionally, failed to erase the R-Mem slot, returnVal=",
+                                returnVal);
         }
         cleanResourcesAndLoopForever();
     }
@@ -255,7 +268,8 @@ void loop()
         Serial.println("    String data verification FAILED!");
         returnVal = tropic01.rMemErase(R_MEM_SLOT_FOR_STRING);
         if (returnVal != LT_OK) {
-            printLibtropicError("    Additionally, failed to erase the R-Mem slot, returnVal=", returnVal);
+            printLibtropicError("    Additionally, failed to erase the R-Mem slot, returnVal=",
+                                returnVal);
         }
         cleanResourcesAndLoopForever();
     }
@@ -275,4 +289,4 @@ void loop()
     Serial.println("---------------------------------------------------------------");
     cleanResourcesAndLoopForever();
 }
-// -----------------------------------------------------------------------------------------------------
+// ----------------------------------------------------------------------------------------------------

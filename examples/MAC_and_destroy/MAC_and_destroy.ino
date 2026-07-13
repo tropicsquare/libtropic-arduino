@@ -44,7 +44,7 @@
 // MbedTLS's PSA Crypto library.
 #include "psa/crypto.h"
 
-// -------------------------------------- Configuration ------------------------------------------------
+// ------------------------------------------ Configuration -------------------------------------------
 // Number of MAC-and-Destroy rounds (PIN entry attempts).
 // Valid range: 1 to 128 (TR01_MACANDD_ROUNDS_MAX), adjust this value to set the number of
 // allowed PIN attempts.
@@ -70,35 +70,42 @@
 // myMasterSecret with a secure random generator.
 #define MY_MASTER_SECRET_SIZE 32u
 
-uint8_t myMasterSecret[MY_MASTER_SECRET_SIZE]
-    = {0xE7, 0xE0, 0x50, 0x35, 0x4A, 0xBC, 0xE5, 0xD4, 0xA9, 0xE0, 0x57, 0x68, 0xFE, 0x27, 0x74, 0x05,
-       0x27, 0xC9, 0x88, 0x7E, 0xE9, 0xEC, 0x6F, 0x40, 0x98, 0xDC, 0x1F, 0xDD, 0x9F, 0x27, 0x34, 0xBA};
+uint8_t myMasterSecret[MY_MASTER_SECRET_SIZE] = {
+    0xE7, 0xE0, 0x50, 0x35, 0x4A, 0xBC, 0xE5, 0xD4, 0xA9, 0xE0, 0x57, 0x68, 0xFE, 0x27, 0x74, 0x05,
+    0x27, 0xC9, 0x88, 0x7E, 0xE9, 0xEC, 0x6F, 0x40, 0x98, 0xDC, 0x1F, 0xDD, 0x9F, 0x27, 0x34, 0xBA};
 
 // Define PIN (4 bytes) - dummy PIN is used as an example.
 uint8_t myPin[4] = {1, 2, 3, 4};
-// -----------------------------------------------------------------------------------------------------
+// ---------------------------------------------------------------------------------------------------
 
-// -------------------------------------- TROPIC01 related macros --------------------------------------
-#define TROPIC01_CS_PIN 5  // Platform's pin number where TROPIC01's SPI Chip Select pin is connected.
+// ------------------------------------ TROPIC01 related macros --------------------------------------
+// Platform's pin number where TROPIC01's SPI Chip Select pin is connected.
+#define TROPIC01_CS_PIN 5
 #if LT_USE_INT_PIN
-#define TROPIC01_INT_PIN \
-    4  // Platform's pin number where TROPIC01's interrupt pin is connected.
-       // Is necessary only when -DLT_USE_INT_PIN=1 was set in build_flags.
+// Platform's pin number where TROPIC01's interrupt pin is connected.
+// Is necessary only when -DLT_USE_INT_PIN=1 was set in build_flags.
+#define TROPIC01_INT_PIN 4
 #endif
 
 // Pairing Key macros for establishing a Secure Channel Session with TROPIC01.
 // Using the default Pairing Key slot 0 of Production TROPIC01 chips.
-#define PAIRING_KEY_PRIV sh0priv_prod0
-#define PAIRING_KEY_PUB sh0pub_prod0
+#define PAIRING_KEY_PRIV lt_sh0priv_prod0
+#define PAIRING_KEY_PUB lt_sh0pub_prod0
 #define PAIRING_KEY_SLOT TR01_PAIRING_KEY_SLOT_INDEX_0
-// -----------------------------------------------------------------------------------------------------
+// ---------------------------------------------------------------------------------------------------
 
-// -------------------------------------- TROPIC01 related variables -----------------------------------
+// ------------------------------------ TROPIC01 related variables -----------------------------------
 #if LT_SEPARATE_L3_BUFF
 // User's own buffer for L3 Layer data.
 uint8_t l3_buffer[LT_SIZE_OF_L3_BUFF] __attribute__((aligned(16))) = {0};
 #endif
 
+// TROPIC01 instance.
+// Because Tropic01 constructor has different number of parameters depending on the used Libtropic
+// CMake options, we are wrapping its call with the directives, so this example is functional with
+// every supported Libtropic CMake option without making any changes to it.
+// This is of course not necessary in your application, if you are not frequently changing the
+// Libtropic CMake options that affect the Tropic01 constructor parameters.
 Tropic01 tropic01(TROPIC01_CS_PIN
 #if LT_USE_INT_PIN
                   ,
@@ -108,25 +115,27 @@ Tropic01 tropic01(TROPIC01_CS_PIN
                   ,
                   l3_buffer, sizeof(l3_buffer)
 #endif
-);  // TROPIC01 instance.
+);
 
-lt_ret_t returnVal;  // Used for return values of Tropic01's methods.
-// -----------------------------------------------------------------------------------------------------
+// Used for return values of Tropic01's methods.
+lt_ret_t returnVal;
+// ----------------------------------------------------------------------------------------------------
 
-// ------------------------------------------ Other variables ------------------------------------------
-// Used when initializing MbedTLS's PSA Crypto
+// ------------------------------------------ Other variables -----------------------------------------
+// Used when initializing MbedTLS's PSA Crypto.
 psa_status_t psaStatus;
 
 // Structure holding MAC-and-Destroy non-volatile memory data.
 // This data must be stored persistently across power cycles.
 struct MacAndDestroyNVM {
-    uint8_t attemptCount;                                              // Number of remaining attempts.
-    uint8_t encryptedSecrets[MACANDD_ROUNDS * MY_MASTER_SECRET_SIZE];  // Encrypted master secrets (c_i).
-    uint8_t tag[32];                                                   // Verification tag (t).
-} __attribute__((packed));
+    uint8_t attemptCount;  // Number of remaining attempts.
+    uint8_t
+        encryptedSecrets[MACANDD_ROUNDS * MY_MASTER_SECRET_SIZE];  // Encrypted master secrets (c_i).
+    uint8_t tag[PSA_HASH_LENGTH(PSA_ALG_SHA_256)];                 // Verification tag (t).
+} __attribute__((__packed__));
 // -----------------------------------------------------------------------------------------------------
 
-// ---------------------------------------- Local static functions -------------------------------------
+// -------------------------------------- Static local functions --------------------------------------
 // Helper function to save some source code lines when printing Libtropic errors using Serial.
 static void printLibtropicError(const char prefixMsg[], const lt_ret_t ret)
 {
@@ -147,7 +156,7 @@ static void cleanResourcesAndLoopForever(void)
 }
 
 // Helper function to print hex buffer.
-static void printHex(const char *label, const uint8_t *data, const size_t len)
+static void printHex(const char label[], const uint8_t data[], const size_t len)
 {
     Serial.print(label);
     Serial.print(": ");
@@ -169,7 +178,7 @@ static void printHex(const char *label, const uint8_t *data, const size_t len)
 
 // Simple XOR encryption/decryption.
 // This is an example dummy encryption, should be replaced with more secure encryption!
-static void xorCrypt(const uint8_t *input, const uint8_t *key, uint8_t *output, const size_t len)
+static void xorCrypt(const uint8_t input[], const uint8_t key[], uint8_t output[], const size_t len)
 {
     for (size_t i = 0; i < len; i++) {
         output[i] = input[i] ^ key[i];
@@ -177,8 +186,8 @@ static void xorCrypt(const uint8_t *input, const uint8_t *key, uint8_t *output, 
 }
 
 // HMAC-SHA256 wrapper using PSA Crypto.
-static psa_status_t hmacSha256(const uint8_t *key, const size_t keyLen, const uint8_t *data, const size_t dataLen,
-                               uint8_t *output)
+static psa_status_t hmacSha256(const uint8_t key[], const size_t keyLen, const uint8_t data[],
+                               const size_t dataLen, uint8_t output[])
 {
     psa_key_attributes_t attributes = PSA_KEY_ATTRIBUTES_INIT;
     psa_key_id_t keyId = 0;
@@ -197,7 +206,8 @@ static psa_status_t hmacSha256(const uint8_t *key, const size_t keyLen, const ui
     }
 
     // Compute HMAC.
-    status = psa_mac_compute(keyId, PSA_ALG_HMAC(PSA_ALG_SHA_256), data, dataLen, output, 32, &outputLen);
+    status = psa_mac_compute(keyId, PSA_ALG_HMAC(PSA_ALG_SHA_256), data, dataLen, output, 32,
+                             &outputLen);
 
 cleanup:
     if (keyId != 0) {
@@ -207,7 +217,7 @@ cleanup:
     return status;
 }
 
-// ------------------------------------ PIN Set and Verify Functions -----------------------------------
+// -------------------------------------- PIN Set and Verify Functions --------------------------------
 /**
  * @brief Set up a new PIN with MAC-and-Destroy.
  *
@@ -218,7 +228,8 @@ cleanup:
  *
  * @return true on success, false otherwise
  */
-static bool pinSetup(const uint8_t *masterSecret, const uint8_t *pin, const uint8_t pinSize, uint8_t *finalKey)
+static bool pinSetup(const uint8_t masterSecret[], const uint8_t pin[], const uint8_t pinSize,
+                     uint8_t finalKey[])
 {
     if (!masterSecret || !pin || pinSize < PIN_SIZE_MIN || pinSize > PIN_SIZE_MAX || !finalKey) {
         Serial.println("  pinSetup(): Invalid parameters!");
@@ -318,7 +329,8 @@ static bool pinSetup(const uint8_t *masterSecret, const uint8_t *pin, const uint
         }
 
         // Encrypt master secret with k_i.
-        xorCrypt(masterSecret, k_i, &nvm.encryptedSecrets[i * MY_MASTER_SECRET_SIZE], MY_MASTER_SECRET_SIZE);
+        xorCrypt(masterSecret, k_i, &nvm.encryptedSecrets[i * MY_MASTER_SECRET_SIZE],
+                 MY_MASTER_SECRET_SIZE);
 
         if ((i + 1) % 10 == 0 || i == MACANDD_ROUNDS - 1) {
             Serial.print("    ");
@@ -367,7 +379,7 @@ static bool pinSetup(const uint8_t *masterSecret, const uint8_t *pin, const uint
  *
  * @return true on correct PIN, false otherwise
  */
-static bool pinVerify(const uint8_t *pin, const uint8_t pinSize, uint8_t *finalKey)
+static bool pinVerify(const uint8_t pin[], const uint8_t pinSize, uint8_t finalKey[])
 {
     if (!pin || pinSize < PIN_SIZE_MIN || pinSize > PIN_SIZE_MAX || !finalKey) {
         Serial.println("  pinVerify(): Invalid parameters!");
@@ -401,8 +413,6 @@ static bool pinVerify(const uint8_t *pin, const uint8_t pinSize, uint8_t *finalK
     Serial.println("    OK");
 
     // Check if attempts remaining.
-    Serial.print("  Attempts remaining: ");
-    Serial.println(nvm.attemptCount);
     if (nvm.attemptCount == 0) {
         Serial.println("  No attempts remaining!");
         return false;
@@ -410,6 +420,9 @@ static bool pinVerify(const uint8_t *pin, const uint8_t pinSize, uint8_t *finalK
 
     // Decrement attempt count.
     nvm.attemptCount--;
+
+    Serial.print("  Attempts remaining: ");
+    Serial.println(nvm.attemptCount);
 
     // Save decremented count immediately.
     Serial.println("  Updating attempt count...");
@@ -451,7 +464,8 @@ static bool pinVerify(const uint8_t *pin, const uint8_t pinSize, uint8_t *finalK
     }
 
     // Decrypt to get s'.
-    xorCrypt(&nvm.encryptedSecrets[nvm.attemptCount * MY_MASTER_SECRET_SIZE], k_i, s_, MY_MASTER_SECRET_SIZE);
+    xorCrypt(&nvm.encryptedSecrets[nvm.attemptCount * MY_MASTER_SECRET_SIZE], k_i, s_,
+             MY_MASTER_SECRET_SIZE);
 
     // Compute t' = HMAC(s', 0x00).
     psa_ret = hmacSha256(s_, sizeof(s_), byte_00, sizeof(byte_00), t_);
@@ -531,9 +545,9 @@ static bool pinVerify(const uint8_t *pin, const uint8_t pinSize, uint8_t *finalK
 
     return true;
 }
-// -----------------------------------------------------------------------------------------------------
+// ----------------------------------------------------------------------------------------------------
 
-// ------------------------------------------ Setup function -------------------------------------------
+// ------------------------------------------ Setup function ------------------------------------------
 void setup()
 {
     // Initialize SPI (using the default SPI instance defined in <SPI.h>).
@@ -587,9 +601,9 @@ void setup()
     Serial.println();
     Serial.println("---------------------------- Loop -----------------------------");
 }
-// -----------------------------------------------------------------------------------------------------
+// ----------------------------------------------------------------------------------------------------
 
-// ------------------------------------------ Loop function --------------------------------------------
+// ------------------------------------------ Loop function -------------------------------------------
 void loop()
 {
     Serial.println("---------------------------------------------------------------");
@@ -637,14 +651,16 @@ void loop()
     int wrongAttempts = MACANDD_ROUNDS - 1;
     Serial.print("Attempting ");
     Serial.print(wrongAttempts);
-    Serial.println(" wrong PIN entries...");
+    Serial.print(" wrong PIN entries (");
+    Serial.print(MACANDD_ROUNDS);
+    Serial.println(" attempts allowed)...");
     Serial.println();
 
     for (int i = 0; i < wrongAttempts; i++) {
         Serial.print("Attempt ");
         Serial.print(i + 1);
         Serial.print("/");
-        Serial.println(wrongAttempts);
+        Serial.println(MACANDD_ROUNDS);
 
         uint8_t finalKeyWrong[32];
         if (pinVerify(wrongPin, sizeof(wrongPin), finalKeyWrong)) {
@@ -690,4 +706,4 @@ void loop()
     Serial.println("---------------------------------------------------------------");
     cleanResourcesAndLoopForever();
 }
-// -----------------------------------------------------------------------------------------------------
+// ----------------------------------------------------------------------------------------------------
