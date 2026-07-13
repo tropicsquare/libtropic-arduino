@@ -10,6 +10,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - bumped up Libtropic to release 3.1.0.
 - FAQ: section "`Tropic01.secureSessionStart()` fails"
+- Support for RP2040 and RP2350 (Raspberry Pi Pico) MCUs.
+- API: `getChipID`, `printChipID`, `getBootloaderFWVersion`, `getRiscvFWVersion`, `getSpectFWVersion`, `printFWHeaders`, `randomValueGet`, `mcounterInit`, `mcounterGet`, `mcounterUpdate`.
 
 ## [0.3.0]
 
