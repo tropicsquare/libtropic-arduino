@@ -11,10 +11,10 @@
 
 #include <Arduino.h>
 #include <SPI.h>
+
 #include "libtropic.h"
 #include "libtropic_common.h"
 #include "libtropic_mbedtls_v4.h"
-
 #include "libtropic_port_arduino.h"
 
 /**

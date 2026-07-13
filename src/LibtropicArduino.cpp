@@ -136,16 +136,13 @@ lt_ret_t Tropic01::macAndDestroy(const lt_mac_and_destroy_slot_t slot, const uin
     return lt_mac_and_destroy(&this->handle, slot, dataOut, dataIn);
 }
 
-// print chip id into a buffer
-lt_ret_t Tropic01::getChipID(lt_chip_id_t &chipId) { 
-    return lt_get_info_chip_id(&this->handle, &chipId); 
-}
+lt_ret_t Tropic01::getChipID(lt_chip_id_t &chipId) { return lt_get_info_chip_id(&this->handle, &chipId); }
 
-lt_ret_t Tropic01::printChipID(const lt_chip_id_t &chip_id, int (*print_func)(const char *format, ...)) {
+lt_ret_t Tropic01::printChipID(const lt_chip_id_t &chip_id, int (*print_func)(const char *format, ...))
+{
     return lt_print_chip_id(&chip_id, print_func);
 }
 
-// print bootloader version into a buffer
 lt_ret_t Tropic01::getBootloaderFWVersion(uint8_t fw_ver[])
 {
     lt_ret_t ret = LT_OK;
@@ -203,15 +200,14 @@ lt_ret_t Tropic01::printFWHeaders(int (*print_func)(const char *format, ...))
     lt_print_fw_header(&this->handle, TR01_FW_BANK_SPECT1, print_func);
     lt_print_fw_header(&this->handle, TR01_FW_BANK_SPECT2, print_func);
 
-    // 4. Restore original mode (if it was application mode, reboot to application mode, if it was maintenance mode, reboot to maintenance mode)
+    // 4. Restore original mode (if it was application mode, reboot to application mode, if it was maintenance mode,
+    // reboot to maintenance mode)
     if (original_mode == LT_TR01_APPLICATION) {
         ret = lt_reboot(&this->handle, TR01_REBOOT);
     }
 
     return ret;
 }
-
-//---------------
 
 lt_ret_t Tropic01::getRiscvFWVersion(uint8_t fw_ver[])
 {
@@ -246,8 +242,6 @@ lt_ret_t Tropic01::getRiscvFWVersion(uint8_t fw_ver[])
     return ret;
 }
 
-//---------------
-
 lt_ret_t Tropic01::getSpectFWVersion(uint8_t fw_ver[])
 {
     lt_ret_t ret = LT_OK;
@@ -277,18 +271,14 @@ lt_ret_t Tropic01::getSpectFWVersion(uint8_t fw_ver[])
     if (original_mode == LT_TR01_MAINTENANCE) {
         ret = lt_reboot(&this->handle, TR01_MAINTENANCE_REBOOT);
     }
-    
+
     return ret;
 }
-
-//---------------
 
 lt_ret_t Tropic01::randomValueGet(uint8_t rand_buf[], const uint16_t rand_len)
 {
     return lt_random_value_get(&this->handle, rand_buf, rand_len);
 }
-
-//--------------
 
 lt_ret_t Tropic01::mcounterInit(const lt_mcounter_index_t index, const uint32_t value)
 {
@@ -300,7 +290,4 @@ lt_ret_t Tropic01::mcounterGet(const lt_mcounter_index_t index, uint32_t &value)
     return lt_mcounter_get(&this->handle, index, &value);
 }
 
-lt_ret_t Tropic01::mcounterUpdate(const lt_mcounter_index_t index)
-{
-    return lt_mcounter_update(&this->handle, index);
-}
+lt_ret_t Tropic01::mcounterUpdate(const lt_mcounter_index_t index) { return lt_mcounter_update(&this->handle, index); }
