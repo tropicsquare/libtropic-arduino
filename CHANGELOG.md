@@ -8,7 +8,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [0.9.0]
 
 ### Added
-- Support for RP2040 and RP2350 (Raspberry Pi Pico) MCUs.
 - API: `getChipID`, `printChipID`, `getBootloaderFWVersion`, `getRiscvFWVersion`, `getSpectFWVersion`, `printFWHeaders`, `randomValueGet`, `mcounterInit`, `mcounterGet`, `mcounterUpdate`.
 
 ## [0.8.0]
