@@ -145,3 +145,166 @@ lt_ret_t Tropic01::macAndDestroy(const lt_mac_and_destroy_slot_t slot, const uin
 {
     return lt_mac_and_destroy(&this->handle, slot, dataOut, dataIn);
 }
+
+lt_ret_t Tropic01::getChipID(lt_chip_id_t &chipId)
+{
+    return lt_get_info_chip_id(&this->handle, &chipId);
+}
+
+lt_ret_t Tropic01::printChipID(const lt_chip_id_t &chip_id, int (*print_func)(const char *format, ...))
+{
+    return lt_print_chip_id(&chip_id, print_func);
+}
+
+lt_ret_t Tropic01::getBootloaderFWVersion(uint8_t fw_ver[])
+{
+    lt_ret_t ret = LT_OK;
+
+    // 1. Save current mode to be able to restore it later
+    lt_tr01_mode_t original_mode;
+    ret = lt_get_tr01_mode(&this->handle, &original_mode);
+    if (ret != LT_OK) {
+        return ret;
+    }
+
+    // 2. Reboot the device in maintenance mode to be able to read bootloader version
+    if (original_mode != LT_TR01_MAINTENANCE) {
+        ret = lt_reboot(&this->handle, TR01_MAINTENANCE_REBOOT);
+        if (ret != LT_OK) {
+            return ret;
+        }
+    }
+
+    // 3. Read Bootloader FW version
+    ret = lt_get_info_riscv_fw_ver(&this->handle, fw_ver);
+    if (ret != LT_OK) {
+        return ret;
+    }
+
+    // 4. Reboot back is done only if the original mode was Application
+    if (original_mode == LT_TR01_APPLICATION) {
+        ret = lt_reboot(&this->handle, TR01_REBOOT);
+    }
+
+    return ret;
+}
+
+lt_ret_t Tropic01::printFWHeaders(int (*print_func)(const char *format, ...))
+{
+    // 1. Save current mode to be able to restore it later
+    lt_tr01_mode_t original_mode;
+    lt_ret_t ret;
+    ret = lt_get_tr01_mode(&this->handle, &original_mode);
+    if (ret != LT_OK) {
+        return ret;
+    }
+
+    // 2. Reboot the device in maintenance mode to be able to read bootloader version
+    if (original_mode != LT_TR01_MAINTENANCE) {
+        ret = lt_reboot(&this->handle, TR01_MAINTENANCE_REBOOT);
+        if (ret != LT_OK) {
+            return ret;
+        }
+    }
+
+    // 3. Print firmware headers using lt_print_fw_header, which reads the header from the chip itself
+    // via the handle.
+    lt_print_fw_header(&this->handle, TR01_FW_BANK_FW1, print_func);
+    lt_print_fw_header(&this->handle, TR01_FW_BANK_FW2, print_func);
+    lt_print_fw_header(&this->handle, TR01_FW_BANK_SPECT1, print_func);
+    lt_print_fw_header(&this->handle, TR01_FW_BANK_SPECT2, print_func);
+
+    // 4. Restore original mode (if it was application mode, reboot to application mode, if it was
+    // maintenance mode, reboot to maintenance mode)
+    if (original_mode == LT_TR01_APPLICATION) {
+        ret = lt_reboot(&this->handle, TR01_REBOOT);
+    }
+
+    return ret;
+}
+
+lt_ret_t Tropic01::getRiscvFWVersion(uint8_t fw_ver[])
+{
+    lt_ret_t ret = LT_OK;
+
+    // 1. Save current mode to be able to restore it later
+    lt_tr01_mode_t original_mode;
+    ret = lt_get_tr01_mode(&this->handle, &original_mode);
+    if (ret != LT_OK) {
+        return ret;
+    }
+
+    // 2. Reboot in Application Mode
+    if (original_mode == LT_TR01_MAINTENANCE) {
+        ret = lt_reboot(&this->handle, TR01_REBOOT);
+        if (ret != LT_OK) {
+            return ret;
+        }
+    }
+
+    // 3. Read RISC-V application firmware version
+    ret = lt_get_info_riscv_fw_ver(&this->handle, fw_ver);
+    if (ret != LT_OK) {
+        return ret;
+    }
+
+    // 4. Reboot back is done only if the original mode was Maintenance
+    if (original_mode == LT_TR01_MAINTENANCE) {
+        ret = lt_reboot(&this->handle, TR01_MAINTENANCE_REBOOT);
+    }
+
+    return ret;
+}
+
+lt_ret_t Tropic01::getSpectFWVersion(uint8_t fw_ver[])
+{
+    lt_ret_t ret = LT_OK;
+
+    // 1. Save current mode to be able to restore it later
+    lt_tr01_mode_t original_mode;
+    ret = lt_get_tr01_mode(&this->handle, &original_mode);
+    if (ret != LT_OK) {
+        return ret;
+    }
+
+    // 2. Reboot in Application Mode
+    if (original_mode == LT_TR01_MAINTENANCE) {
+        ret = lt_reboot(&this->handle, TR01_REBOOT);
+        if (ret != LT_OK) {
+            return ret;
+        }
+    }
+
+    // 3. Read SPECT firmware version
+    ret = lt_get_info_spect_fw_ver(&this->handle, fw_ver);
+    if (ret != LT_OK) {
+        return ret;
+    }
+
+    // 4. Reboot back is done only if the original mode was Maintenance
+    if (original_mode == LT_TR01_MAINTENANCE) {
+        ret = lt_reboot(&this->handle, TR01_MAINTENANCE_REBOOT);
+    }
+
+    return ret;
+}
+
+lt_ret_t Tropic01::randomValueGet(uint8_t rand_buf[], const uint16_t rand_len)
+{
+    return lt_random_value_get(&this->handle, rand_buf, rand_len);
+}
+
+lt_ret_t Tropic01::mcounterInit(const lt_mcounter_index_t index, const uint32_t value)
+{
+    return lt_mcounter_init(&this->handle, index, value);
+}
+
+lt_ret_t Tropic01::mcounterGet(const lt_mcounter_index_t index, uint32_t &value)
+{
+    return lt_mcounter_get(&this->handle, index, &value);
+}
+
+lt_ret_t Tropic01::mcounterUpdate(const lt_mcounter_index_t index)
+{
+    return lt_mcounter_update(&this->handle, index);
+}
