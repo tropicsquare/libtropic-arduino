@@ -56,8 +56,23 @@ ar = env.get("AR")
 
 # Get the compiler flags from the PlatformIO environment (may be empty)
 c_flags = " ".join(env.get("CCFLAGS", [])) or ""
+
+# Newer Arduino-ESP32 (3.x) passes the ESP-IDF include list via "-iprefix ... @flags/includes" in CCFLAGS.
+# Those headers (e.g. newlib platform_include) need sdkconfig.h, which lives in a memory-type specific
+# directory added only through CPPPATH, so forward that directory to the CMake build as well.
+for inc_dir in env.get("CPPPATH", []):
+    inc_dir = env.subst(str(inc_dir))
+    if (Path(inc_dir) / "sdkconfig.h").is_file():
+        c_flags = f"{c_flags} -I{inc_dir}".strip()
+        break
 # Ensure C++14 is passed to CMake's CXX flags
 cxx_flags = (c_flags + " -std=gnu++14").strip()
+
+# Newer Arduino-ESP32 (3.x) also moved C-only flags to CFLAGS. These include target-critical options
+# such as -mlongcalls on Xtensa, without which linking against ROM functions fails.
+# CFLAGS may contain nested lists, so let SCons flatten and expand it.
+c_only_flags = env.subst("$CFLAGS")
+c_flags = f"{c_flags} {c_only_flags}".strip()
 
 # Base cmake args (we will extend with extra tokens after we extract LT_CAL)
 cmake_args = [
