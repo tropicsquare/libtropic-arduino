@@ -495,10 +495,10 @@ static bool pinVerify(const uint8_t pin[], const uint8_t pinSize, uint8_t finalK
     }
 
     Serial.print("  Reinitializing ");
-    Serial.print(MACANDD_ROUNDS - 1 - nvm.attemptCount);
+    Serial.print(MACANDD_ROUNDS - nvm.attemptCount);
     Serial.println(" slots...");
 
-    for (int x = nvm.attemptCount; x < MACANDD_ROUNDS - 1; x++) {
+    for (int x = nvm.attemptCount; x < MACANDD_ROUNDS; x++) {
         ret = tropic01.macAndDestroy((lt_mac_and_destroy_slot_t)x, u, ignore);
         if (ret != LT_OK) {
             Serial.print("    Slot ");
