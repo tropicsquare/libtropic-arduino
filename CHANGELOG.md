@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Support building with espressif32 v8.0.0.
+
 ### Fixed
 - `MAC_and_destroy.ino` - all slots reinitialized after successful PIN check.
 
