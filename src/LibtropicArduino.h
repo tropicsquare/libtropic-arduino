@@ -274,17 +274,17 @@ class Tropic01 {
     lt_ret_t getChipID(lt_chip_id_t &chipId);
 
     /**
-     * @brief Prints the contents of a chip ID structure using the provided print function.
+     * @brief Prints the contents of a chip ID structure.
+     * @details Output is printed using the logging function of the Arduino HAL (lt_port_log), which
+     * prints to Serial.
      *
-     * @param chip_id[in]     Chip ID structure to be printed (e.g. obtained from getChipID)
-     * @param print_func[in]  Pointer to a printf-style function used to output the formatted text
-     * (e.g. printf)
+     * @param chip_id[in]  Chip ID structure to be printed (e.g. obtained from getChipID)
      *
-     * @retval                LT_OK Method executed successfully
-     * @retval                other Method did not execute successfully, you might use lt_ret_verbose()
-     * to get verbose encoding of returned value
+     * @retval             LT_OK Method executed successfully
+     * @retval             other Method did not execute successfully, you might use lt_ret_verbose() to
+     * get verbose encoding of returned value
      */
-    lt_ret_t printChipID(const lt_chip_id_t &chip_id, int (*print_func)(const char *format, ...));
+    lt_ret_t printChipID(const lt_chip_id_t &chip_id);
 
     /**
      * @brief Reads the bootloader firmware version from TROPIC01.
@@ -301,19 +301,16 @@ class Tropic01 {
     lt_ret_t getBootloaderFWVersion(uint8_t fw_ver[]);
 
     /**
-     * @brief Prints the firmware headers (FW1, FW2, SPECT1, SPECT2) stored in TROPIC01 using the
-     * provided print function.
+     * @brief Prints the firmware headers (FW1, FW2, SPECT1, SPECT2) stored in TROPIC01.
      * @details The chip is temporarily rebooted into maintenance mode to read the firmware headers and
-     * then rebooted back to its original mode.
+     * then rebooted back to its original mode. Output is printed using the logging function of the
+     * Arduino HAL (lt_port_log), which prints to Serial.
      *
-     * @param print_func[in]  Pointer to a printf-style function used to output the formatted text
-     * (e.g. printf)
-     *
-     * @retval                LT_OK Method executed successfully
-     * @retval                other Method did not execute successfully, you might use lt_ret_verbose()
-     * to get verbose encoding of returned value
+     * @retval  LT_OK Method executed successfully
+     * @retval  other Method did not execute successfully, you might use lt_ret_verbose() to get
+     * verbose encoding of returned value
      */
-    lt_ret_t printFWHeaders(int (*print_func)(const char *format, ...));
+    lt_ret_t printFWHeaders(void);
 
     /**
      * @brief Reads the RISC-V application firmware version from TROPIC01.

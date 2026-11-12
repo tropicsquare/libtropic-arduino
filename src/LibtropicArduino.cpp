@@ -8,6 +8,8 @@
 
 #include "LibtropicArduino.h"
 
+#include "libtropic_port.h"
+
 Tropic01::Tropic01(const uint16_t spiCSPin
 #if LT_USE_INT_PIN
                    ,
@@ -151,9 +153,9 @@ lt_ret_t Tropic01::getChipID(lt_chip_id_t &chipId)
     return lt_get_info_chip_id(&this->handle, &chipId);
 }
 
-lt_ret_t Tropic01::printChipID(const lt_chip_id_t &chip_id, int (*print_func)(const char *format, ...))
+lt_ret_t Tropic01::printChipID(const lt_chip_id_t &chip_id)
 {
-    return lt_print_chip_id(&chip_id, print_func);
+    return lt_print_chip_id(&chip_id, lt_port_log);
 }
 
 lt_ret_t Tropic01::getBootloaderFWVersion(uint8_t fw_ver[])
@@ -189,7 +191,7 @@ lt_ret_t Tropic01::getBootloaderFWVersion(uint8_t fw_ver[])
     return ret;
 }
 
-lt_ret_t Tropic01::printFWHeaders(int (*print_func)(const char *format, ...))
+lt_ret_t Tropic01::printFWHeaders(void)
 {
     // 1. Save current mode to be able to restore it later
     lt_tr01_mode_t original_mode;
@@ -209,10 +211,10 @@ lt_ret_t Tropic01::printFWHeaders(int (*print_func)(const char *format, ...))
 
     // 3. Print firmware headers using lt_print_fw_header, which reads the header from the chip itself
     // via the handle.
-    lt_print_fw_header(&this->handle, TR01_FW_BANK_FW1, print_func);
-    lt_print_fw_header(&this->handle, TR01_FW_BANK_FW2, print_func);
-    lt_print_fw_header(&this->handle, TR01_FW_BANK_SPECT1, print_func);
-    lt_print_fw_header(&this->handle, TR01_FW_BANK_SPECT2, print_func);
+    lt_print_fw_header(&this->handle, TR01_FW_BANK_FW1, lt_port_log);
+    lt_print_fw_header(&this->handle, TR01_FW_BANK_FW2, lt_port_log);
+    lt_print_fw_header(&this->handle, TR01_FW_BANK_SPECT1, lt_port_log);
+    lt_print_fw_header(&this->handle, TR01_FW_BANK_SPECT2, lt_port_log);
 
     // 4. Restore original mode (if it was application mode, reboot to application mode, if it was
     // maintenance mode, reboot to maintenance mode)
