@@ -169,8 +169,16 @@ lt_ret_t Tropic01::getBootloaderFWVersion(uint8_t fw_ver[])
         return ret;
     }
 
-    // 2. Reboot the device in maintenance mode to be able to read bootloader version
+    // 2. Reboot the device in maintenance mode to be able to read bootloader version. The reboot ends
+    // the Secure Session, so an active one is aborted first.
     if (original_mode != LT_TR01_MAINTENANCE) {
+        if (this->handle.l3.session_status == LT_SECURE_SESSION_ON) {
+            ret = this->secureSessionEnd();
+            if (ret != LT_OK) {
+                return ret;
+            }
+        }
+
         ret = lt_reboot(&this->handle, TR01_MAINTENANCE_REBOOT);
         if (ret != LT_OK) {
             return ret;
@@ -201,8 +209,16 @@ lt_ret_t Tropic01::printFWHeaders(void)
         return ret;
     }
 
-    // 2. Reboot the device in maintenance mode to be able to read bootloader version
+    // 2. Reboot the device in maintenance mode to be able to read firmware headers. The reboot ends
+    // the Secure Session, so an active one is aborted first.
     if (original_mode != LT_TR01_MAINTENANCE) {
+        if (this->handle.l3.session_status == LT_SECURE_SESSION_ON) {
+            ret = this->secureSessionEnd();
+            if (ret != LT_OK) {
+                return ret;
+            }
+        }
+
         ret = lt_reboot(&this->handle, TR01_MAINTENANCE_REBOOT);
         if (ret != LT_OK) {
             return ret;
