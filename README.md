@@ -3,6 +3,8 @@ This library provides support for using the TROPIC01 secure element in the Ardui
 
 **Tested Boards:**
 * Espressif ESP32-DevKitC V4
+* Raspberry Pi Pico (RP2040)
+* Raspberry Pi Pico 2 (RP2350)
 
 **Current API:**
 * `secureSessionStart`
@@ -18,6 +20,16 @@ This library provides support for using the TROPIC01 secure element in the Ardui
 * `rMemRead`
 * `rMemErase`
 * `macAndDestroy`
+* `getChipID`
+* `printChipID`
+* `getBootloaderFWVersion`
+* `getRiscvFWVersion`
+* `getSpectFWVersion`
+* `printFWHeaders`
+* `randomValueGet`
+* `mcounterInit`
+* `mcounterGet`
+* `mcounterUpdate`
 
 
 ## Using LibtropicArduino Inside PlatformIO

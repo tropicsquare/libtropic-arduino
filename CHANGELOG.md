@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - Support building with espressif32 v8.0.0.
+- API: `getChipID`, `printChipID`, `getBootloaderFWVersion`, `getRiscvFWVersion`, `getSpectFWVersion`, `printFWHeaders`, `randomValueGet`, `mcounterInit`, `mcounterGet`, `mcounterUpdate`.
 
 ### Fixed
 - `MAC_and_destroy.ino` - all slots reinitialized after successful PIN check.
