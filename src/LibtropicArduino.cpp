@@ -227,10 +227,14 @@ lt_ret_t Tropic01::printFWHeaders(void)
 
     // 3. Print firmware headers using lt_print_fw_header, which reads the header from the chip itself
     // via the handle.
-    lt_print_fw_header(&this->handle, TR01_FW_BANK_FW1, lt_port_log);
-    lt_print_fw_header(&this->handle, TR01_FW_BANK_FW2, lt_port_log);
-    lt_print_fw_header(&this->handle, TR01_FW_BANK_SPECT1, lt_port_log);
-    lt_print_fw_header(&this->handle, TR01_FW_BANK_SPECT2, lt_port_log);
+    const lt_bank_id_t banks[] = {TR01_FW_BANK_FW1, TR01_FW_BANK_FW2, TR01_FW_BANK_SPECT1,
+                                  TR01_FW_BANK_SPECT2};
+    for (const lt_bank_id_t bank : banks) {
+        ret = lt_print_fw_header(&this->handle, bank, lt_port_log);
+        if (ret != LT_OK) {
+            return ret;
+        }
+    }
 
     // 4. Restore original mode (if it was application mode, reboot to application mode, if it was
     // maintenance mode, reboot to maintenance mode)

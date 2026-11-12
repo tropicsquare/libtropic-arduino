@@ -309,6 +309,8 @@ class Tropic01 {
      * @details The chip is temporarily rebooted into maintenance mode to read the firmware headers and
      * then rebooted back to its original mode. Output is printed using the logging function of the
      * Arduino HAL (lt_port_log), which prints to Serial.
+     * @note If an error occurs, the method returns immediately without rebooting the chip back to its
+     * original mode, so the chip may stay in maintenance mode.
      * @warning The reboot ends the Secure Session. If a Secure Session is active, it is aborted before
      * the reboot and it is not restored afterwards. Call secureSessionStart() again if needed.
      *
