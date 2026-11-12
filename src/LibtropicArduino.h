@@ -290,6 +290,8 @@ class Tropic01 {
      * @brief Reads the bootloader firmware version from TROPIC01.
      * @details The chip is temporarily rebooted into maintenance mode to read the bootloader version
      * and then rebooted back to its original mode.
+     * @note If an error occurs, the method returns immediately without rebooting the chip back to its
+     * original mode, so the chip may stay in maintenance mode.
      * @warning The reboot ends the Secure Session. If a Secure Session is active, it is aborted before
      * the reboot and it is not restored afterwards. Call secureSessionStart() again if needed.
      *
@@ -320,6 +322,8 @@ class Tropic01 {
      * @brief Reads the RISC-V application firmware version from TROPIC01.
      * @details If the chip is in maintenance mode, it is temporarily rebooted into application mode to
      * read the version and then rebooted back to maintenance mode.
+     * @note If an error occurs, the method returns immediately without rebooting the chip back to its
+     * original mode, so the chip may stay in application mode.
      *
      * @param fw_ver[out]  Buffer for the firmware version bytes (must be
      * TR01_L2_GET_INFO_RISCV_FW_SIZE bytes, i.e. 4 bytes)
@@ -334,6 +338,8 @@ class Tropic01 {
      * @brief Reads the SPECT firmware version from TROPIC01.
      * @details If the chip is in maintenance mode, it is temporarily rebooted into application mode to
      * read the version and then rebooted back to maintenance mode.
+     * @note If an error occurs, the method returns immediately without rebooting the chip back to its
+     * original mode, so the chip may stay in application mode.
      *
      * @param fw_ver[out]  Buffer for the firmware version bytes (must be
      * TR01_L2_GET_INFO_SPECT_FW_SIZE bytes, i.e. 4 bytes)
