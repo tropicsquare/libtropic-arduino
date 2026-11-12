@@ -3,8 +3,8 @@ This library provides support for using the TROPIC01 secure element in the Ardui
 
 **Tested Boards:**
 * Espressif ESP32-DevKitC V4
-* Raspberry Pi Pico (RP2040)
-* Raspberry Pi Pico 2 (RP2350)
+* Raspberry Pi Pico (RP2040) - requires [additional setup](#using-libtropicarduino-with-raspberry-pi-pico)
+* Raspberry Pi Pico 2 (RP2350) - requires [additional setup](#using-libtropicarduino-with-raspberry-pi-pico)
 
 **Current API:**
 * `secureSessionStart`
@@ -82,6 +82,80 @@ This library provides support for using the TROPIC01 secure element in the Ardui
     Ping message received from TROPIC01: "Hello World!"
     --
     ```
+
+
+## Using LibtropicArduino with Raspberry Pi Pico
+The default MbedTLS configuration does not build for Raspberry Pi Pico (RP2040) and Pico 2 (RP2350), because it expects an operating system (time, filesystem, networking and platform entropy). The following steps use the [Arduino-Pico core](https://github.com/earlephilhower/arduino-pico) and the [MbedTLS library for PlatformIO](https://registry.platformio.org/libraries/baracodadailyhealthtech/mbedtls).
+
+1. Create a new PlatformIO project and use the following `platformio.ini` (use `board = rpipico2` for Pico 2):
+
+    ```
+    [env:pico]
+    platform = https://github.com/maxgerhardt/platform-raspberrypi.git
+    board = rpipico
+    framework = arduino
+    board_build.core = earlephilhower
+
+    lib_deps =
+        https://github.com/tropicsquare/libtropic-arduino.git
+        baracodadailyhealthtech/mbedtls
+
+    build_flags =
+        -I include
+        ; Custom MbedTLS configuration, see step 2.
+        -DMBEDTLS_USER_CONFIG_FILE=\"mbedtls_user_config.h\"
+        ; Prevents CMake from linking a test executable when checking the compiler.
+        -DCMAKE_TRY_COMPILE_TARGET_TYPE=STATIC_LIBRARY
+    ```
+
+2. Inside your project's `include/` folder, create `mbedtls_user_config.h`. MbedTLS includes it after its default configuration:
+
+    ```c
+    // Disable features that require an operating system.
+    #undef MBEDTLS_HAVE_TIME
+    #undef MBEDTLS_HAVE_TIME_DATE
+    #undef MBEDTLS_FS_IO
+    #undef MBEDTLS_NET_C
+    #undef MBEDTLS_TIMING_C
+    #undef MBEDTLS_PSA_CRYPTO_STORAGE_C
+    #undef MBEDTLS_PSA_ITS_FILE_C
+
+    // Use the entropy source from step 3 instead of the platform one.
+    #define MBEDTLS_NO_PLATFORM_ENTROPY
+    #define MBEDTLS_ENTROPY_HARDWARE_ALT
+    ```
+
+3. Inside your project's `src/` folder, create `mbedtls_entropy.cpp`, which provides entropy to MbedTLS from the hardware random number generator of the Pico:
+
+    ```cpp
+    #include <string.h>
+
+    #include "mbedtls/platform_util.h"
+    #include "pico/rand.h"
+
+    extern "C" int mbedtls_hardware_poll(void *data, unsigned char *output, size_t len, size_t *olen)
+    {
+        (void)data;
+        size_t bytes_left = len;
+        unsigned char *output_ptr = output;
+        uint64_t random_data;
+        *olen = 0;
+
+        while (bytes_left) {
+            random_data = get_rand_64();
+            size_t cpy_cnt = bytes_left < sizeof(random_data) ? bytes_left : sizeof(random_data);
+            memcpy(output_ptr, &random_data, cpy_cnt);
+            bytes_left -= cpy_cnt;
+            output_ptr += cpy_cnt;
+            *olen += cpy_cnt;
+        }
+
+        mbedtls_platform_zeroize(&random_data, sizeof(random_data));
+        return 0;
+    }
+    ```
+
+4. Continue with steps 4 - 7 from [Using LibtropicArduino Inside PlatformIO](#using-libtropicarduino-inside-platformio). The default `SPI` instance uses pins GP16 (MISO), GP18 (SCK) and GP19 (MOSI). Set `TROPIC01_CS_PIN` in the example according to your wiring.
 
 
 ## Repository structure
