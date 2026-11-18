@@ -106,6 +106,10 @@ The default MbedTLS configuration does not build for Raspberry Pi Pico (RP2040) 
         -DMBEDTLS_USER_CONFIG_FILE=\"mbedtls_user_config.h\"
         ; Prevents CMake from linking a test executable when checking the compiler.
         -DCMAKE_TRY_COMPILE_TARGET_TYPE=STATIC_LIBRARY
+        ; GCC 15+ no longer zeroes whole unions on "= {0}". MbedTLS < 3.6.4 relies on this.
+        ; Using this flag restores the previous behavior.
+        ; Remove if using GCC 14 or older.
+        -fzero-init-padding-bits=unions
     ```
 
 2. Inside your project's `include/` folder, create `mbedtls_user_config.h`. MbedTLS includes it after its default configuration:
